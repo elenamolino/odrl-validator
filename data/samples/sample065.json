@@ -1,0 +1,25 @@
+{
+  "uid": "http://odrlapi.appspot.com/samples/sample065",
+  "type": "Offer",
+  "dct:source": "http://w3c.github.io/poe/model/",
+  "permission": {
+    "assigner": "http://example.com/org88",
+    "target": {
+      "type": "AssetCollection",
+      "action": "play",
+      "refinement": {
+        "leftOperand": "odrl:runningTime",
+        "operator": "lt",
+        "rightOperand": {
+          "type": "xsd:integer",
+          "@value": "60"
+        },
+        "unit": {
+          "uid": "http://qudt.org/vocab/unit/MinuteTime"
+        }
+      }
+    }
+  },
+  "profile": "http://example.com/odrl:profile:11",
+  "@context": "http://www.w3.org/ns/odrl.jsonld"
+}

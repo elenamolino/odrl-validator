@@ -1,0 +1,24 @@
+{
+  "uid": "http://odrlapi.appspot.com/samples/sample067",
+  "type": "Agreement",
+  "dct:source": "http://w3c.github.io/poe/model/",
+  "permission": {
+    "assignee": {
+      "type": "PartyCollection",
+      "action": "display",
+      "refinement": {
+        "leftOperand": "foaf:age",
+        "operator": "gt",
+        "rightOperand": {
+          "type": "xsd:integer",
+          "@value": "17"
+        }
+      },
+      "source": "http://example.com/user44/friends"
+    },
+    "assigner": "http://example.com/user44",
+    "target": "http://example.com/myPhotos:BdayParty"
+  },
+  "profile": "http://example.com/odrl:profile:12",
+  "@context": "http://www.w3.org/ns/odrl.jsonld"
+}

@@ -1,0 +1,30 @@
+{
+  "uid": "http://odrlapi.appspot.com/samples/sample022",
+  "type": "Agreement",
+  "dct:source": {
+    "uid": "http://w3c.github.io/poe/model/"
+  },
+  "obligation": {
+    "action": {
+      "rdf:value": {
+        "uid": "odrl:compensate"
+      },
+      "refinement": {
+        "leftOperand": "payAmount",
+        "operator": "eq",
+        "rightOperand": {
+          "type": "xsd:integer",
+          "@value": "500"
+        },
+        "unit": {
+          "uid": "http://dbpedia.org/resource/Euro"
+        }
+      }
+    },
+    "assignee": "http://example.com/person:44",
+    "assigner": "http://example.com/org:43",
+    "target": "http://example.com/photoAlbum:55"
+  },
+  "profile": "http://example.com/odrl:profile:09",
+  "@context": "http://www.w3.org/ns/odrl.jsonld"
+}

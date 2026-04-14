@@ -1,0 +1,8 @@
+{
+  "uid": "http://odrlapi.appspot.com/samples/cons88C1",
+  "type": "Constraint",
+  "odrl:leftOperand": "media",
+  "operator": "eq",
+  "rightOperand": "online",
+  "@context": "http://www.w3.org/ns/odrl.jsonld"
+}

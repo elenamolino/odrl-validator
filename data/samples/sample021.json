@@ -1,0 +1,22 @@
+{
+  "uid": "http://odrlapi.appspot.com/samples/sample021",
+  "type": "Agreement",
+  "dct:source": {
+    "uid": "http://w3c.github.io/poe/model/"
+  },
+  "permission": {
+    "action": "display",
+    "assignee": "http://example.com/assignee:55",
+    "assigner": "http://example.com/MyPix:55",
+    "conflict": "perm",
+    "target": "http://example.com/photoAlbum:55"
+  },
+  "profile": "http://example.com/odrl:profile:08",
+  "prohibition": {
+    "action": "display",
+    "assignee": "http://example.com/assignee:55",
+    "assigner": "http://example.com/MyPix:55",
+    "target": "http://example.com/photoAlbum:55"
+  },
+  "@context": "http://www.w3.org/ns/odrl.jsonld"
+}

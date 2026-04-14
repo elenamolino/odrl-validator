@@ -1,0 +1,10 @@
+{
+  "uid": "http://odrlapi.appspot.com/samples/sample001",
+  "type": "Policy",
+  "permission": {
+    "type": "Permission",
+    "action": "reproduce",
+    "target": "http://odrlapi.appspot.com/samples/asset000"
+  },
+  "@context": "http://www.w3.org/ns/odrl.jsonld"
+}

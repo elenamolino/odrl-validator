@@ -1,0 +1,21 @@
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+#valid. 
+<http://example.com/policy:4444>
+  a odrl:Offer ;
+  odrl:permission [
+    odrl:action odrl:play ;
+    odrl:assigner <http://example.com/org88> ;
+    odrl:target [
+      a odrl:AssetCollection ;
+      odrl:refinement [
+        odrl:leftOperand odrl:runningTime ;
+        odrl:operator odrl:lt ;
+        odrl:rightOperand "60"^^xsd:string ;
+        odrl:unit "http://qudt.org/vocab/unit/MinuteTime"^^xsd:string
+      ] ;
+      odrl:source <http://example.com/media-catalogue>
+    ]
+  ] ;
+  odrl:profile <http://example.com/odrl:profile:11> .

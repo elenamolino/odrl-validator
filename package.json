@@ -1,0 +1,29 @@
+{
+  "name": "odrl-validator",
+  "version": "0.0.1",
+  "description": "Validating ODRL policies regarding syntax, semantics and consistency",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ODRL",
+    "SHACL"
+  ],
+  "author": "Wout Slabbinck",
+  "license": "MIT",
+  "dependencies": {
+    "@jeswr/pretty-turtle": "^1.8.2",
+    "@rdfjs/types": "^2.0.1",
+    "@types/n3": "^1.26.1",
+    "n3": "^2.0.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.3.0",
+    "jest-rdf": "^2.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

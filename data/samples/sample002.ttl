@@ -1,0 +1,5 @@
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+
+#invalid. policy without rules
+<http://odrlapi.appspot.com/samples/sample002>
+    a odrl:Policy .
