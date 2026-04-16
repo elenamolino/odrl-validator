@@ -9,6 +9,7 @@ See the [wiki](https://github.com/elenamolino/odrl-validator/wiki)
 
 ### Pipeline
 - [ ] fix Ids in the config -> make proper URIs that are dereferencable (w3id, github, ...)
+- [ ] Test for each policies in [rdflicenses](./data/rdflicenses/) whether they are valid policies
 
 ## Optional
 - [ ] An HTTP API to call the validator (github actions)
