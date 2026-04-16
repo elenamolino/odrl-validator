@@ -19,6 +19,7 @@ The actual validator output is then compared with the expected results defined i
 Data origin
 - `data/policies`: [ODRL Test Suite](https://github.com/SolidLabResearch/ODRL-Test-Suite) from the paper [Interoperable Interpretation and Evaluation of ODRL Policies](https://link.springer.com/chapter/10.1007/978-3-031-94578-6_11 )
 - `data/samples`: [ODRL Validator](https://odrlapi.appspot.com/) by UPM and Wright State University
+- `data/rdflicenses`: [Licensius](https://github.com/oeg-upm/licensius), a collection of RDF licenses as ODRL policies
 
 ## Architecture
 
