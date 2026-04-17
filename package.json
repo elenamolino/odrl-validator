@@ -5,7 +5,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "demo": "tsx demo.ts"
   },
   "keywords": [
     "ODRL",
@@ -17,7 +18,10 @@
     "@jeswr/pretty-turtle": "^1.8.2",
     "@rdfjs/types": "^2.0.1",
     "@types/n3": "^1.26.1",
-    "n3": "^2.0.3"
+
+    "n3": "^2.0.3",
+    "rdf-validate-shacl": "^0.6.5",
+    "shacl-engine": "^1.1.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

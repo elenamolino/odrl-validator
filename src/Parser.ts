@@ -31,7 +31,6 @@ console.log(__dirname);
     // Load TTL file
     const ttlPath = resolve(__dirname, "..", entry.file);
     const ttlContent = await readFile(ttlPath, 'utf8');
-    console.log(entry.file)
     
     // Parse into quads
     const quads: Quad[] = parser.parse(ttlContent);

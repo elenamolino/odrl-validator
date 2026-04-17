@@ -31,22 +31,25 @@ export interface ConflictResult {
 
 
 /**
- * What the validator *expects* for this test case.
+ * The output of ODRL Validation and detection
  */
 export interface ValidatorResult {
   valid: boolean;
 
-  /**
-   * High-level expectation about conflicts.
-   * TODO: maybe remove?
-   */
-  conflictExpectation: 'yes' | 'no' | 'maybe';
   // if empty, then it is valid
   validationResults: ValidationResult[];
   // if empty, then there are no conflicts
   conflicts: ConflictResult[];
 }
 
+/**
+ * TestCaseResult
+ */
+export interface TestCaseResult {
+  result: boolean;
+  expectedResult: ValidatorResult;
+  calculatedResult: ValidatorResult;
+}
 
 /**
  * A complete ODRL validator test case.
@@ -81,5 +84,5 @@ export interface IODRLTestCaseValidator {
    * Runs validation and compares actual vs expected.
    * Fails or reports mismatch according to test runner logic.
    */
-  validateTestCase(testCase: ODRLTestCase): Promise<ValidatorResult>;
+  validateTestCase(testCase: ODRLTestCase): Promise<TestCaseResult>;
 }

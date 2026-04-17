@@ -90,6 +90,8 @@ npm i
 
 # Running the test suite
 npx tsx demo.ts
+# or using npm
+npm run demo
 ```
 
 ## Comments
