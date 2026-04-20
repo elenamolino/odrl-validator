@@ -6,6 +6,12 @@ See the [wiki](https://github.com/elenamolino/odrl-validator/wiki)
 - [ ] publish on npm
 
 ### Validator
+- [ ] proper ingestion of the rules and shapes (to be browser compatible)
+- [ ] Fix issue regarding ODRL actions on the shape
+  - A solution could be injection the ODRL voc together with the policies for the SHACL Validation. An issue however is that if somebody adds `a odrl:Action` into the policy, we no longer would validate actions. To be discussed
+- [ ] parse SHACL violations properly
+- [ ] handle the absence of policies in the validation. Is that technically a valid policy
+- [ ] parse conflict errors properly
 
 ### Pipeline
 - [ ] fix Ids in the config -> make proper URIs that are dereferencable (w3id, github, ...)

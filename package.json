@@ -18,7 +18,7 @@
     "@jeswr/pretty-turtle": "^1.8.2",
     "@rdfjs/types": "^2.0.1",
     "@types/n3": "^1.26.1",
-
+    "eyeling": "1.22.13",
     "n3": "^2.0.3",
     "rdf-validate-shacl": "^0.6.5",
     "shacl-engine": "^1.1.0"

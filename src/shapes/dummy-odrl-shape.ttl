@@ -6,11 +6,6 @@
 ex:odrlPolicy a sh:NodeShape ;
   sh:targetClass odrl:Policy, odrl:Set, odrl:Agreement, odrl:Offer ;
   sh:property [
-    sh:path odrl:uid ;
-    sh:nodeKind sh:IRI ;
-    sh:minCount 1 ;
-    sh:maxCount 1
-  ], [
     sh:path [
       sh:alternativePath (odrl:permission odrl:prohibition odrl:duty)
     ] ;
@@ -39,7 +34,7 @@ ex:odrlRule a sh:NodeShape ;
     sh:path odrl:action ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:class odrl:Action
+    sh:nodeKind sh:IRI # Should be action, but that can be an issue...
   ], [
     sh:path odrl:assigner ;
     sh:nodeKind sh:IRI ;
