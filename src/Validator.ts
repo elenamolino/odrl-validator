@@ -12,27 +12,34 @@ export class ODRLValidator implements IODRLValidator {
 
     private n3Rules: string;
 
-    public constructor(){
+    public constructor() {
         // ugly way to load in shacl file, should be more generic. 
         // Also, this approach makes it so the component will not work in the browser
         const parser = new Parser()
-        const rawShape = readFileSync(join(__dirname, "shapes", "dummy-odrl-shape.ttl"), "utf-8") 
-        this.shaclStore = new Store(parser.parse(rawShape)) 
+        const rawShape = readFileSync(join(__dirname, "shapes", "policy-core.ttl"), "utf-8")
+        this.shaclStore = new Store(parser.parse(rawShape))
 
-        this.shaclValidator = new Validator(this.shaclStore, {factory: new DataFactory()});
-        this.n3Rules = readFileSync(join(__dirname, "rules", "rule1.n3"), "utf-8") 
+        this.shaclValidator = new Validator(this.shaclStore, { factory: new DataFactory() });
+        this.n3Rules = readFileSync(join(__dirname, "rules", "rule1.n3"), "utf-8")
     }
 
     public async validate(policies: Quad[]): Promise<ValidatorResult> {
         // SHACL validation bit (note: RDF-Validate-SHACL is ESM, so we use the shacl-engine) https://github.com/woutslabbinck/ODRL-shape/blob/main/index.ts
         // Also, shacl-engine is made for speed
+
+
         const output = {
             valid: false,
             validationResults: [],
             conflicts: []
         }
-        const report = await this.shaclValidator.validate({dataset: new Store(policies)})
+        const report = await this.shaclValidator.validate({ dataset: new Store(policies) })
         if (report.conforms === false) {
+            output.validationResults = (report.results).map((result: any) => ({
+                message: result.message[0].value,
+                focusNode: result.focusNode?.value,
+                resultSeverity: result.severity?.value
+            }));
             return output
         }
 
@@ -40,7 +47,7 @@ export class ODRLValidator implements IODRLValidator {
 
         // Notation3 Conflict Detection
         const conflicts = reason({ proofComments: false }, new Writer().quadsToString(policies) + "\n" + this.n3Rules)
-        
+
         // unfortunately, @RdfJsReasonInput from the eyeling types cannot be used, so the policies have to be transformed to string
         // the rules are also kept as string
 

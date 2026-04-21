@@ -9,16 +9,20 @@ async function main() {
 
   // DEMO: testing out the validator
   const validator = new ODRLValidator();
-  const result = await validator.validate(cases[0].representation) // should have been false, but its empty so technically valid
-  console.log(result);
- 
-  console.log(await validator.validate(cases[2].representation)) // false case, there are no rules
+  for (const [i, testCase] of cases.slice(1, 80).entries()) {
+    console.log(`Test ${i} (ID: ${testCase.id}):`);
 
-  // DEMO: testing out the test case comparison thingy
+    const result = await validator.validate(testCase.representation);
 
-  const testcaseValidator = new TestCaseValidator({odrlValidator: validator})
-  const testCaseResult = await testcaseValidator.validateTestCase(cases[2]);
-  console.log(testCaseResult);
+    console.log('Valid:', result.valid);
+    // const testcaseValidator = new TestCaseValidator({odrlValidator: validator})
+    // const testCaseResult = await testcaseValidator.validateTestCase(cases[2]);
+    // console.log('Expected:', testCaseResult.expectedResult.valid);
+
+    if (result.validationResults.length > 0) {
+      console.log('Errors:', result.validationResults);
+    }
+  }
 
 
   // DEMO: testing out the reasoning
@@ -47,4 +51,3 @@ ex:dutyRule
 }
 
 main();
-

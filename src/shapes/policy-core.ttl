@@ -1,0 +1,336 @@
+@prefix : <http://example.com/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+#################################################
+# Shape for Policy
+#################################################
+
+:PolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy ;
+    sh:nodeKind sh:IRI ;
+    sh:message "Policies must be identified by an IRI." ;
+
+    sh:property [
+        sh:path [ sh:alternativePath ( odrl:permission odrl:prohibition odrl:obligation ) ] ;
+        sh:minCount 1 ;
+        sh:message "Policies must have at least one permission, obligation or prohibition." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:permission ;
+        sh:node :PermissionShape ;
+        sh:message "Each permission must conform to an ODRL Permission." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:obligation ;
+        sh:node :DutyShape ;
+        sh:message "Each obligation must conform to an ODRL Duty." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:prohibition ;
+        sh:node :ProhibitionShape ;
+        sh:message "Each prohibition must conform to an ODRL Prohibition." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:profile ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Profile must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:inheritFrom ;
+        sh:nodeKind sh:IRI ;
+        sh:message "InheritFrom must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:conflict ;
+        sh:nodeKind sh:IRI ;
+        sh:in ( odrl:perm odrl:prohibit odrl:invalid ) ;
+        sh:maxCount 1 ;
+        sh:message "Conflict strategy must appear at most once and be a ConflictTerm: odrl:perm, odrl:prohibit, or odrl:invalid." ;
+    ] .
+
+
+# Set
+
+:SetPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Set ;
+    sh:node :PolicyShape .
+
+
+# Offer
+
+:OfferPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Offer ;
+    sh:node :PolicyShape ;
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An Offer must have one assigner." ;
+    ] .
+
+
+# Agreement
+
+:AgreementPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Agreement ;
+    sh:node :PolicyShape ;
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An Agreement must have one assigner." ;
+    ] ;
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An Agreement must have one assignee." ;
+    ] .
+
+
+#################################################
+# Shape for Rule
+#################################################
+
+# Permission
+
+:PermissionShape a sh:NodeShape ;
+    sh:targetClass odrl:Permission ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    # --- Must have an action ---
+    sh:property [
+        sh:path odrl:action ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Permission must have one action." ;
+    ] ;
+
+    # --- Must have a target  ---
+    sh:property [
+        sh:path odrl:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Permission must have one target." ;
+    ] ;
+
+    # --- MAY have an assignee ---
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:maxCount 1 ;
+        sh:message "A Permission may have at most one assignee." ;
+    ] ;
+
+    # --- MAY have an assigner ---
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:maxCount 1 ;
+        sh:message "A Permission may have at most one assigner." ;
+    ] ;
+
+    # --- MAY have zero or more constraints ---
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each constraint must conform to either an ODRL Constraint or an ODRL LogicalConstraint." ;
+    ] ;
+
+    # --- MAY have zero or more preconditions as Duties ---
+    sh:property [
+        sh:path odrl:duty ;  
+        sh:node :DutyShape ;  
+        sh:message "Each duty must conform to an ODRL Duty." ;
+    ] .
+
+
+# Duty
+
+:DutyShape a sh:NodeShape ;
+    sh:targetClass odrl:Duty ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+        
+    # --- Must have an action ---
+    sh:property [
+        sh:path odrl:action ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Duty must have one action." ;
+    ] ;
+
+    # --- May have a target of allowed classes ---
+    sh:property [
+        sh:path odrl:target ;
+        sh:maxCount 1 ;
+        sh:message "A duty may have none or one target." ;
+    ] ;
+
+    # --- May have an assignee ---
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:maxCount 1 ;
+        sh:message "A Duty may have at most one assignee." ;
+    ] ;
+
+    # --- MAY have an assigner---
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:maxCount 1 ;
+        sh:message "A Duty may have at most one assigner." ;
+    ] ; 
+
+    # --- May have zero or more constraints ---
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each constraint must conform to either an ODRL Constraint or an ODRL LogicalConstraint." ;
+    ] ;
+
+    # --- MAY have zero or more consequence as Duties ---
+    sh:property [
+        sh:path odrl:consequence ;  
+        sh:node :DutyShape ;  
+        sh:message "Each consequence must conform to an ODRL duty." ;
+    ] .
+
+
+# Prohibition
+
+:ProhibitionShape a sh:NodeShape ;
+    sh:targetClass odrl:Prohibition ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    # --- Must have an action---
+    sh:property [
+        sh:path odrl:action ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition must have one action." ;
+    ] ;
+
+    # --- Must have a target  ---
+    sh:property [
+        sh:path odrl:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition must have one target." ;
+    ] ;
+
+    # --- May have an assignee ---
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition may have at most one assignee." ;
+    ] ;
+
+    # --- MAY have an assigner---
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition may have at most one assigner." ;
+    ] ; 
+
+    # --- MAY have constraint(s) ---
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each constraint must conform to either an ODRL Constraint or an ODRL LogicalConstraint." ;
+    ] ;
+
+    # --- MAY have remedy as a Duty (to be enforced if prohibition is violated) ---
+    sh:property [
+        sh:path odrl:remedy ;
+        sh:node :DutyShape ;
+        sh:message "Each remedy must conform to an ODRL duty." ;
+    ] .
+
+#################################################
+# Shape for Constraint
+#################################################
+
+:LogicalConstraintShape a sh:NodeShape ;
+    sh:targetClass odrl:LogicalConstraint ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    sh:property [
+        sh:path odrl:and ;
+        sh:node :ConstraintShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:or ;
+        sh:node :ConstraintShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:xone ;
+        sh:node :ConstraintShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:andSequence ;
+        sh:node :ConstraintShape ;
+    ] ;
+
+    sh:property [
+        sh:path [ sh:alternativePath ( odrl:or odrl:xone odrl:and odrl:andSequence ) ] ;
+        sh:minCount 1 ;
+        sh:message "A LogicalConstraint must contain one of odrl:and, odrl:or, odrl:xone, or odrl:andSequence." ;
+    ] .
+
+:ConstraintShape a sh:NodeShape ;
+    sh:targetClass odrl:Constraint ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    # --- Must have a leftOperand ---
+    sh:property [
+        sh:path odrl:leftOperand ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint must have one odrl:leftOperand." ;
+    ] ;
+
+    # --- Must have an operator ---
+    sh:property [
+        sh:path odrl:operator ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint must have one operator." ;
+    ] ;
+
+    # --- Must have a rightOperand ---
+    sh:xone ([ 
+        sh:property [
+        sh:path odrl:rightOperand ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint must have exactly one of odrl:rightOperand or odrl:rightOperandReference." ; ] 
+    ][
+        sh:property [
+        sh:path odrl:rightOperandReference;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;        
+        sh:nodeKind sh:IRI;
+        sh:message "A Constraint must have exactly one of odrl:rightOperand or odrl:rightOperandReference." ; ] 
+    ]) .
