@@ -29,6 +29,7 @@ flowchart LR
     Policies["Set of ODRL Policies"]
 
     subgraph ODRLValidator["ODRL Validator"]
+        Atomization --> Validation
         Validation["ODRL Validation\n(Syntactic & Semantic)"]
         ConflictDetection["Conflict Detection"]
         Validation --> ConflictDetection
@@ -36,7 +37,7 @@ flowchart LR
 
     Output["Output\n(Validation Results & Conflicts)"]
 
-    Policies --> Validation
+    Policies --> ODRLValidator
     ODRLValidator --> Output
 ```
 Test suite
