@@ -10,7 +10,7 @@ As the goal of this repository is to provide a tool to validate ODRL policies th
 On the one hand, we have to be very strict regarding the cardinalities on a rule level, and, on the other hand these cardinalities don't matter for valid ODRL policies.
 To balance this issue, we opt for a pragmatic approach[^1]: we **atomize** the policies and validate with a SHACL shape that only deals with policies with rules in **atomic** form (basically ignoring §2.7 all together).
 
-Luckily, there exists a package already that provides this exact support for ODRL policies: TODO: add
+Luckily, there exists a package already that provides this exact support for ODRL policies: [ODRL-atomization](https://www.npmjs.com/package/odrl-atomization).
 
 In the **ODRL Validator** we thus make use of that package to atomize the policies before doing the SHACL validation.
 
@@ -38,7 +38,7 @@ In this policy, Alice is assigned to each rule individually.
 The rules specify that Alice is allowed to read resource X and modify resource Y:
 
 ```ttl
-@prefix odrl: <http://www.w3.org/ns/odrl/2/>
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 
 <#policy1> a odrl:Policy ;
     odrl:permission <#rule1>, <#rule2> .
@@ -58,7 +58,7 @@ The rules specify that Alice is allowed to read resource X and modify resource Y
 In this compact policy, Alice is placed at the policy level as the `assignee` for both rules, reducing repetition while maintaining the same meaning: Alice is allowed to read resource X and modify resource Y:
 
 ```ttl
-@prefix odrl: <http://www.w3.org/ns/odrl/2/>
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 
 <#policy2> a odrl:Policy ;
     odrl:assignee <#alice> ;
@@ -94,7 +94,7 @@ Using a composite rule, we can group the common `assignee` and `action` properti
 In this policy, each action-target-assignee combination is specified separately, leading to a lot of repetition. 
 Alice and Bob are allowed to read or modify resource X
 ```ttl
-@prefix odrl: <http://www.w3.org/ns/odrl/2/>
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 
 <#policy3> a odrl:Policy ;
     odrl:permission <#rule1>, <#rule2>, <#rule3>, <#rule4> .
@@ -125,7 +125,7 @@ In a **composite rule**, all the actions, targets, and assignees are combined in
 The resulting rule allows Alice and Bob to either read or modify resource X
 
 ```ttl
-@prefix odrl: <http://www.w3.org/ns/odrl/2/>
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 
 <#policy4> a odrl:Policy ;
     odrl:permission <#compositeRule> .
@@ -149,7 +149,7 @@ In this policy, there are six separate atomic rules: four permissions for Alice 
 
 Alice and Bob are granted full permissions to read and modify resource X, while Charlie is prohibited from accessing or modifying it.
 ```ttl
-@prefix odrl: <http://www.w3.org/ns/odrl/2/>
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 
 <#policy5> a odrl:Policy ;
     odrl:permission <#rule1>, <#rule2>, <#rule3>, <#rule4> ;
@@ -193,7 +193,7 @@ Additionally, the `assignee` and `action` properties are grouped together in com
 
 Alice and Bob are granted full permissions to read and modify resource X, while Charlie is prohibited from accessing or modifying it.
 ```ttl
-@prefix odrl: <http://www.w3.org/ns/odrl/2/>
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 
 <#policy6> a odrl:Policy ;
     odrl:target <#resourceX> ;
