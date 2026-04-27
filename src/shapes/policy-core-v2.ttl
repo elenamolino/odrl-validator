@@ -1,0 +1,587 @@
+@prefix : <http://example.com/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+#################################################
+# Shape for Policy
+#################################################
+
+:PolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy ;
+    sh:nodeKind sh:IRI ;
+    sh:message "Policies must be identified by an IRI." ;
+
+    sh:property [
+        sh:path [ sh:alternativePath ( odrl:permission odrl:prohibition odrl:obligation ) ] ;
+        sh:minCount 1 ;
+        sh:message "Policies must have at least one permission, obligation or prohibition." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:profile ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Profile must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:inheritFrom ;
+        sh:nodeKind sh:IRI ;
+        sh:message "InheritFrom must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:conflict ;
+        sh:nodeKind sh:IRI ;
+        sh:in ( odrl:perm odrl:prohibit odrl:invalid ) ;
+        sh:maxCount 1 ;
+        sh:message "Conflict strategy must appear at most once and be a ConflictTerm: odrl:perm, odrl:prohibit, or odrl:invalid." ;
+    ] .
+
+
+# Set
+
+:SetPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Set ;
+    sh:node :PolicyShape .
+
+
+# Offer
+
+:OfferPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Offer ;
+    sh:node :PolicyShape ;
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An Offer must have one assigner." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assigner should be of type odrl:Party." ;
+    ] .
+
+
+# Agreement
+
+:AgreementPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Agreement ;
+    sh:node :PolicyShape ;
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An Agreement must have one assigner." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assigner should be of type odrl:Party." ;
+    ] ;
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An Agreement must have one assignee." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assignee ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assignee should be of type odrl:Party." ;
+    ] .
+
+
+#################################################
+# Shape for Rule
+#################################################
+
+# Permission
+
+:PermissionShape a sh:NodeShape ;
+    sh:targetClass odrl:Permission ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    # --- Must have an action ---
+    sh:property [
+        sh:path odrl:action ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Permission must have one action." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:action ;
+        sh:or (
+            [ sh:node :ActionShape ]
+            [ sh:node :ActionWithRefinementShape ]
+        );
+        sh:message "The action should be structurally valid." ;
+    ] ;
+
+    # --- Must have a target  ---
+    sh:property [
+        sh:path odrl:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Permission must have one target." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:target ;
+        sh:node :ValidTargetShape ;
+        sh:message "Target should be of type odrl:Asset." ;
+    ] ;
+
+    # --- MAY have an assignee ---
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+        sh:message "A Permission may have at most one assignee." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assignee ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assignee should be of type odrl:Party." ;
+    ] ;
+
+    # --- MAY have an assigner ---
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+        sh:message "A Permission may have at most one assigner." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assigner should be of type odrl:Party." ;
+    ] ;
+
+    # --- MAY have zero or more constraints ---
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:minCount 0 ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each constraint must conform to ODRL constraint of ODRL logical constraint." ;
+    ] ;
+
+    # --- MAY have zero or more preconditions as Duties ---
+    sh:property [
+        sh:path odrl:duty ;  
+        sh:minCount 0 ; 
+        sh:node :DutyShape ;  
+        sh:message "Each duty must conform to ODRL duty." ;
+    ] .
+
+
+# Duty
+
+:DutyShape a sh:NodeShape ;
+    sh:targetClass odrl:Duty ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+        
+    # --- Must have an action ---
+    sh:property [
+        sh:path odrl:action ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Duty must have one action." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:action ;
+        sh:or (
+            [ sh:node :ActionShape ]
+            [ sh:node :ActionWithRefinementShape ]
+        ) ;
+        sh:message "The action must be structurally valid." ;
+    ] ;
+
+    # --- May have a target of allowed classes ---
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:target ;
+        sh:minCount 0 ;
+        sh:node :ValidTargetShape ;
+        sh:message "Target should be of type odrl:Asset." ;
+    ] ;
+
+    # --- May have an assignee ---
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+        sh:message "A Duty may have at most one assignee." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assignee ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assignee should be of type odrl:Party." ;
+    ] ;
+
+    # --- MAY have an assigner---
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+        sh:message "A Duty may have at most one assigner." ;
+    ] ; 
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assigner should be of type odrl:Party." ;
+    ] ;
+
+    # --- May have zero or more constraints ---
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:minCount 0 ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each constraint must conform to ODRL constraint of ODRL logical constraint." ;
+    ] ;
+
+    # --- MAY have zero or more consequence as Duties ---
+    sh:property [
+        sh:path odrl:consequence ;  
+        sh:minCount 0 ; 
+        sh:node :DutyShape ;  
+        sh:message "Each consequence must conform to ODRL duty." ;
+    ] .
+
+
+# Prohibition
+
+:ProhibitionShape a sh:NodeShape ;
+    sh:targetClass odrl:Prohibition ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    # --- Must have an action of allowed types (with optional refinement) ---
+    sh:property [
+        sh:path odrl:action ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition must have one action." ;
+    ] ;
+    sh:property [
+        sh:path odrl:action ;
+        sh:or (
+            [ sh:node :ActionShape ]
+            [ sh:node :ActionWithRefinementShape ]
+        ) ;
+        sh:message "The action must be structurally valid." ;
+    ] ;
+
+    # --- Must have a target  ---
+    sh:property [
+        sh:path odrl:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition must have one target." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:target ;
+        sh:node :ValidTargetShape ;
+        sh:message "Target should be of type odrl:Asset." ;
+    ] ;
+
+    # --- May have an assignee ---
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition may have at most one assignee." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assignee ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assignee should be of type odrl:Party." ;
+    ] ;
+
+    # --- MAY have an assigner---
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition may have at most one assigner." ;
+    ] ; 
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:node :ValidPartyShape ;
+        sh:message "The assigner should be of type odrl:Party." ;
+    ] ;
+
+    # --- MAY have constraint(s) ---
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:minCount 0 ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each constraint must conform to ConstraintShape or LogicalConstraintShape." ;
+    ] ;
+
+    # --- MAY have remedy as a Duty (to be enforced if prohibition is violated) ---
+    sh:property [
+        sh:path odrl:remedy ;
+        sh:minCount 0 ;
+        sh:node :DutyShape ;
+        sh:message "Each remedy must conform to ODRL duty." ;
+    ] .
+
+#################################################
+# Shape for Constraint
+#################################################
+
+:LogicalConstraintShape a sh:NodeShape ;
+    sh:targetClass odrl:LogicalConstraint ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    sh:property [
+        sh:path odrl:and ;
+        sh:minCount 0 ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:or ;
+        sh:minCount 0 ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:xone ;
+        sh:minCount 0 ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:andSequence ;
+        sh:minCount 0 ;
+    ] ;
+
+    sh:message "LogicalConstraint must contain only and, or, xone and andSequence, also a list of valid Constraint nodes." .
+
+
+:ConstraintShape a sh:NodeShape ;
+    sh:targetClass odrl:Constraint ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+
+    # --- Must have a leftOperand ---
+    sh:property [
+        sh:path odrl:leftOperand ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:or ([
+            sh:in (
+                odrl:absolutePosition
+                odrl:absoluteSpatialPosition
+                odrl:absoluteTemporalPosition
+                odrl:absoluteSize
+                odrl:count
+                odrl:dateTime
+                odrl:delayPeriod
+                odrl:deliveryChannel
+                odrl:elapsedTime
+                odrl:event
+                odrl:fileFormat
+                odrl:industry
+                odrl:language
+                odrl:media
+                odrl:meteredTime
+                odrl:payAmount
+                odrl:percentage
+                odrl:product
+                odrl:purpose
+                odrl:recipient
+                odrl:relativePosition
+                odrl:relativeSpatialPosition
+                odrl:relativeTemporalPosition
+                odrl:relativeSize
+                odrl:resolution
+                odrl:spatial
+                odrl:spatialCoordinates
+                odrl:systemDevice
+                odrl:timeInterval
+                odrl:unitOfCount
+                odrl:version
+                odrl:virtualLocation
+            ) ]
+            [ 
+                sh:class odrl:LeftOperand;
+            ]
+        ) ;
+        sh:message "A Constraint must have exactly one odrl:leftOperand." ;
+    ] ;
+
+    # --- Must have an operator ---
+    sh:property [
+        sh:path odrl:operator ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (
+            odrl:eq
+            odrl:gt
+            odrl:gteq
+            odrl:lt
+            odrl:lteq
+            odrl:neq
+            odrl:isA
+            odrl:hasPart
+            odrl:isPartOf
+            odrl:isAllOf
+            odrl:isAnyOf
+            odrl:isNoneOf
+        ) ;
+        sh:message "The operator must be one of the standard ODRL operators." ;
+    ] ;
+
+    # --- Must have a rightOperand ---
+    sh:xone ([ 
+        sh:property [
+        sh:path odrl:rightOperand ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint must have exactly one odrl:rightOperand." ; ] 
+    ][
+        sh:property [
+        sh:path odrl:rightOperandReference;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;        
+        sh:nodeKind sh:IRI;
+        sh:message "A Constraint must be an instance of odrl:LeftOperand." ; ] 
+    ]) .
+
+#################################################
+# Shape for Action
+#################################################
+
+:AllowedActionValueShape a sh:NodeShape ;
+    sh:severity sh:Warning ;
+    sh:or ([
+        sh:in (
+            odrl:acceptTracking
+            odrl:aggregate
+            odrl:anonymize
+            odrl:annotate
+            odrl:archive
+            odrl:attribute
+            odrl:compensate
+            odrl:concurrentUse
+            odrl:delete
+            odrl:derive
+            odrl:digitize
+            odrl:display
+            odrl:distribute
+            odrl:ensureExclusivity
+            odrl:execute
+            odrl:extract
+            odrl:give
+            odrl:grantUse
+            odrl:include
+            odrl:index
+            odrl:inform
+            odrl:install
+            odrl:modify
+            odrl:move
+            odrl:nextPolicy
+            odrl:obtainConsent
+            odrl:play
+            odrl:present
+            odrl:print
+            odrl:read
+            odrl:reproduce
+            odrl:reviewPolicy
+            odrl:sell
+            odrl:stream
+            odrl:synchronize
+            odrl:textToSpeech
+            odrl:transfer
+            odrl:transform
+            odrl:translate
+            odrl:uninstall
+            odrl:use
+            odrl:watermark
+            odrl:Attribution
+            odrl:CommercialUse
+            odrl:DerivativeWorks
+            odrl:Distribution
+            odrl:Notice
+            odrl:Reproduction
+            odrl:ShareAlike
+            odrl:Sharing
+            odrl:SourceCode) 
+    ][ 
+        sh:class odrl:Action 
+    ]) ;
+    sh:message "Action is neither part of the ODRL Core Vocabulary nor typed as odrl:Action." .
+
+:ActionShape a sh:NodeShape ;
+    sh:severity sh:Warning ;
+    sh:node :AllowedActionValueShape ;
+    sh:message "The action must be a valid ODRL action." .
+
+:ActionWithRefinementShape a sh:NodeShape ;
+    sh:property [
+        sh:path rdf:value ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An action refinement node must have one rdf:value." ;
+    ] ;
+
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path rdf:value ;
+        sh:node :AllowedActionValueShape ;
+        sh:message "The action value should be part of the ODRL vocabulary or typed as odrl:Action." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:refinement ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "When the action is a blank node, it must include a valid refinement." ;
+    ] .
+
+
+#################################################
+# Shape for Party
+#################################################
+
+:ValidPartyShape a sh:NodeShape ;
+    sh:severity sh:Warning ;
+    sh:class odrl:Party ;
+    sh:message "Assignee and assigner should be of type odrl:Party." .
+
+#################################################
+# Shape for Target Asset
+#################################################
+
+:ValidTargetShape a sh:NodeShape ;
+    sh:severity sh:Warning ;
+    sh:class odrl:Asset ;
+    sh:message "Target should be of type odrl:Asset." .

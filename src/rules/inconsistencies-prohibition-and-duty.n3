@@ -1,0 +1,20 @@
+@prefix : <http://example.com/> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+{
+    ?duty a odrl:Duty ;
+       odrl:assignee ?party ;
+       odrl:target ?asset ;
+       odrl:action ?action .
+
+    ?prohibition a odrl:Prohibition ;
+       odrl:assignee ?party ;
+       odrl:target ?asset ;
+       odrl:action ?action .
+}
+=>
+{
+    ?duty :conflictsWith ?prohibition ;
+        :reason "duty and prohibition have same assignee, target and action" .
+}.

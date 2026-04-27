@@ -1,0 +1,16 @@
+@prefix : <http://example.com/> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+
+:policy1 a odrl:Policy ;
+    odrl:permission :perm1 ;
+    odrl:prohibition :proh1 .
+
+:perm1 a odrl:Permission ;
+    odrl:assignee :alice ;
+    odrl:target :file1 ;
+    odrl:action odrl:use .
+
+:proh1 a odrl:Prohibition ;
+    odrl:assignee :alice ;
+    odrl:target :file1 ;
+    odrl:action odrl:use .
