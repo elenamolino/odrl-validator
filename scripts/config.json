@@ -1,0 +1,8 @@
+{
+    "shapes": [
+        "dummy-odrl-shape.ttl"
+    ],
+    "rules":[
+        "rule1.n3"
+    ]
+}
