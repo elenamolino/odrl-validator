@@ -1,42 +1,44 @@
 import { Quad } from "@rdfjs/types";
-import { Parser, Store, Writer } from 'n3';
+import { Store, Writer } from 'n3';
 import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
-import { readFileSync } from 'fs';
-import { join } from "path";
 import { Validator } from "shacl-engine"
 import { reason } from "eyeling";
-import { Atomizer} from "odrl-atomization";
+import { Atomizer } from "odrl-atomization";
+
 export class ODRLValidator implements IODRLValidator {
     private atomizer: Atomizer;
-    
+
     protected shaclStore: Store;
     private shaclValidator: Validator;
 
     private n3Rules: string;
 
-    public constructor() {
+    public constructor(config: { shape: Quad[], n3Rules: string }) {
+        const { shape, n3Rules } = config;
+
         this.atomizer = new Atomizer();
-        // ugly way to load in shacl file, should be more generic. 
-        // Also, this approach makes it so the component will not work in the browser
-        const parser = new Parser()
-        const rawShape = readFileSync(join(__dirname, "shapes", "policy-core.ttl"), "utf-8")
-        this.shaclStore = new Store(parser.parse(rawShape))
+        this.shaclStore = new Store(shape);
 
         this.shaclValidator = new Validator(this.shaclStore, { factory: new DataFactory() });
-        this.n3Rules = readFileSync(join(__dirname, "rules", "rule1.n3"), "utf-8")
+        this.n3Rules = n3Rules;
     }
 
     public async validate(policies: Quad[]): Promise<ValidatorResult> {
-        // SHACL validation bit (note: RDF-Validate-SHACL is ESM, so we use the shacl-engine) https://github.com/woutslabbinck/ODRL-shape/blob/main/index.ts
-        // Also, shacl-engine is made for speed
-        const atomizedPolicies = await this.atomizer.atomize(policies);
-
         const output = {
             valid: false,
             validationResults: [],
             conflicts: []
         }
+
+        let atomizedPolicies: Quad[];
+        try {
+            atomizedPolicies = await this.atomizer.atomize(policies);
+        } catch (error) {
+            console.error("Error atomizing policies:", error);
+            atomizedPolicies = policies;
+        }
+        
         const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
         if (report.conforms === false) {
             output.validationResults = (report.results).map((result: any) => ({

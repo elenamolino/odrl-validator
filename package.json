@@ -4,6 +4,10 @@
   "description": "Validating ODRL policies regarding syntax, semantics and consistency",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "browser": {
+    "./dist/index.js": "./dist/index.browser.js",
+    "./dist/index.d.ts": "./dist/index.browser.d.ts"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "demo": "tsx demo.ts"
