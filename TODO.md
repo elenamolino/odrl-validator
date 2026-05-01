@@ -6,19 +6,19 @@ See the [wiki](https://github.com/elenamolino/odrl-validator/wiki)
 - [ ] publish on npm
 
 ### Validator
-- [ ] TODO: proper ingestion of the rules and shapes (to be browser compatible)
+- [x] proper ingestion of the rules and shapes (to be browser compatible)
   - [x] change constructor (also have defaults)
   - [x] shape and rules as string (like ODRL Evaluator)
   - [x] split core and browser index.ts
-  - [ ] Fix issue that for some reason there is a difference between SHAPES.ts vs loading directly. This should not happen
+  - [x] Add build script
 - [ ] Fix issue regarding ODRL actions on the shape
   - A solution could be injection the ODRL voc together with the policies for the SHACL Validation. An issue however is that if somebody adds `a odrl:Action` into the policy, we no longer would validate actions. To be discussed
 - [ ] parse SHACL violations properly
-- [ ] handle the absence of policies in the validation. Is that technically a valid policy
+- [ ] handle the absence of policies in the validation. Is that technically a valid policy?
 - [ ] parse conflict errors properly
 
 ### Pipeline
-- [ ] fix Ids in the config -> make proper URIs that are dereferencable (w3id, github, ...)
+- [ ] fix Ids in the TEST CASES config -> make proper URIs that are dereferencable (w3id, github, ...)
 - [ ] Test for each policies in [rdflicenses](./data/rdflicenses/) whether they are valid policies
 
 ## Optional

@@ -7,10 +7,19 @@
   "browser": {
     "./dist/index.js": "./dist/index.browser.js",
     "./dist/index.d.ts": "./dist/index.browser.d.ts"
-  },
+  },  
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "npm run clean && npm run makeRules && npm run makeShapes && tsc",
+    "makeRules": "tsx scripts/MakeRules.ts ",
+    "makeShapes": "tsx scripts/MakeShapes.ts ",
+    "clean": "rm -rf ./dist",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demo": "tsx demo.ts"
+    "demo": "tsx demo.ts",
+    "prepare": "npm run build",
+    "release": "npm run build && npm publish --access public"
   },
   "keywords": [
     "ODRL",

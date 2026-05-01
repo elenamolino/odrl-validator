@@ -32,7 +32,7 @@ export class ODRLValidator implements IODRLValidator {
     }
 
     public async validate(policies: Quad[]): Promise<ValidatorResult> {
-        const output = {
+        const output: ValidatorResult = {
             valid: false,
             validationResults: [],
             conflicts: []
@@ -65,7 +65,13 @@ export class ODRLValidator implements IODRLValidator {
         // the rules are also kept as string
 
         // TODO: parse the conflicts properly
-        output.conflicts.push(conflicts)
+        output.conflicts.push({
+            message: conflicts,
+            type: "DeonticConflict",
+            severity: "error",
+            ruleA: "",
+            ruleB: ""
+        })
 
         return output
     }
