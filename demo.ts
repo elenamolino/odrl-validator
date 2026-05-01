@@ -20,7 +20,8 @@ async function main() {
     {
       shape: shape,
       n3Rules: notation3Rules
-    });
+    }
+  );
   for (const [i, testCase] of cases.slice(1, 80).entries()) {
     console.log(`Test ${i} (ID: ${testCase.id}):`);
 

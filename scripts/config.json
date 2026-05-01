@@ -1,6 +1,6 @@
 {
     "shapes": [
-        "dummy-odrl-shape.ttl"
+        "policy-core.ttl"
     ],
     "rules":[
         "rule1.n3"

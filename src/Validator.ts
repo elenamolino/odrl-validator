@@ -1,10 +1,12 @@
 import { Quad } from "@rdfjs/types";
-import { Store, Writer } from 'n3';
+import { Parser, Store, Writer } from 'n3';
 import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
 import { Validator } from "shacl-engine"
 import { reason } from "eyeling";
 import { Atomizer } from "odrl-atomization";
+import { RULES } from "./rules/Rules";
+import { SHAPES } from "./shapes/Shapes";
 
 export class ODRLValidator implements IODRLValidator {
     private atomizer: Atomizer;
@@ -14,9 +16,14 @@ export class ODRLValidator implements IODRLValidator {
 
     private n3Rules: string;
 
-    public constructor(config: { shape: Quad[], n3Rules: string }) {
-        const { shape, n3Rules } = config;
+    public constructor(config?: { shape?: Quad[], n3Rules?: string }) {
+        let shape: Quad[] = new Parser().parse(SHAPES);
+        let n3Rules: string = RULES;
 
+        if (config){
+            shape = config.shape ?? shape;
+            n3Rules = config.n3Rules ?? n3Rules;
+        }
         this.atomizer = new Atomizer();
         this.shaclStore = new Store(shape);
 
@@ -38,11 +45,11 @@ export class ODRLValidator implements IODRLValidator {
             console.error("Error atomizing policies:", error);
             atomizedPolicies = policies;
         }
-        
+
         const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
-        if (report.conforms === false) {
+        if (report.conforms === false) {            
             output.validationResults = (report.results).map((result: any) => ({
-                message: result.message[0].value,
+                message: result.message?.[0]?.value,
                 focusNode: result.focusNode?.value,
                 resultSeverity: result.severity?.value
             }));

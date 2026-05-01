@@ -8,8 +8,9 @@ See the [wiki](https://github.com/elenamolino/odrl-validator/wiki)
 ### Validator
 - [ ] TODO: proper ingestion of the rules and shapes (to be browser compatible)
   - [x] change constructor (also have defaults)
-  - [ ] shape and rules as string (like ODRL Evaluator)
+  - [x] shape and rules as string (like ODRL Evaluator)
   - [x] split core and browser index.ts
+  - [ ] Fix issue that for some reason there is a difference between SHAPES.ts vs loading directly. This should not happen
 - [ ] Fix issue regarding ODRL actions on the shape
   - A solution could be injection the ODRL voc together with the policies for the SHACL Validation. An issue however is that if somebody adds `a odrl:Action` into the policy, we no longer would validate actions. To be discussed
 - [ ] parse SHACL violations properly
