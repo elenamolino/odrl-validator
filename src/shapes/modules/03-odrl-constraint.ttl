@@ -1,0 +1,226 @@
+#################################################
+# Shape for Constraint = must have leftOperand, operator and rightOperand or rightOperandReference
+#################################################
+
+:ConstraintShape a sh:NodeShape ;
+    sh:targetClass odrl:Constraint ;
+
+    sh:property [
+        sh:path odrl:uid ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A Constraint may have one uid, and it must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:datatype ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint may have one dataType." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:unit ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A Constraint may have one unit, and it must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:status ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint may have one status." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:leftOperand ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint must have one odrl:leftOperand." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:leftOperand ;
+        sh:or ([
+            sh:in (
+                odrl:absolutePosition
+                odrl:absoluteSpatialPosition
+                odrl:absoluteTemporalPosition
+                odrl:absoluteSize
+                odrl:count
+                odrl:dateTime
+                odrl:delayPeriod
+                odrl:deliveryChannel
+                odrl:elapsedTime
+                odrl:event
+                odrl:fileFormat
+                odrl:industry
+                odrl:language
+                odrl:media
+                odrl:meteredTime
+                odrl:payAmount
+                odrl:percentage
+                odrl:product
+                odrl:purpose
+                odrl:recipient
+                odrl:relativePosition
+                odrl:relativeSpatialPosition
+                odrl:relativeTemporalPosition
+                odrl:relativeSize
+                odrl:resolution
+                odrl:spatial
+                odrl:spatialCoordinates
+                odrl:systemDevice
+                odrl:timeInterval
+                odrl:unitOfCount
+                odrl:version
+                odrl:virtualLocation
+            ) ]
+            [ 
+                sh:class odrl:LeftOperand;
+            ]
+        ) ;
+        sh:message "The constraint leftOperand should be part of the ODRL vocabulary or typed as odrl:LeftOperand." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:operator ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Constraint must have one odrl:operator." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:operator ;
+        sh:in (
+            odrl:eq
+            odrl:gt
+            odrl:gteq
+            odrl:lt
+            odrl:lteq
+            odrl:neq
+            odrl:isA
+            odrl:hasPart
+            odrl:isPartOf
+            odrl:isAllOf
+            odrl:isAnyOf
+            odrl:isNoneOf
+        ) ;
+        sh:message "The operator should be a standard ODRL operators." ;
+    ] ;
+
+    sh:xone ([ 
+        sh:property [
+            sh:path odrl:rightOperand ;
+            sh:minCount 1 ;
+            sh:maxCount 1 ;
+            sh:or (
+                [ sh:nodeKind sh:Literal ]
+                [ sh:nodeKind sh:IRI ]
+                [ sh:class odrl:RightOperand ]
+                [ sh:node :RightOperandListShape ]
+            ) ;
+            sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference." ; 
+        ] 
+    ][
+        sh:property [
+            sh:path odrl:rightOperandReference;
+            sh:minCount 1 ;
+            sh:maxCount 1 ;    
+            sh:or (
+                [ sh:nodeKind sh:IRI ]
+                [ sh:node :RightOperandReferenceListShape ]
+            ) ;    
+            sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference." ; 
+        ] 
+    ]) .
+
+:RightOperandListShape a sh:NodeShape ;
+    sh:node :RdfListShape ;
+    sh:property [
+        sh:path ( [ sh:zeroOrMorePath rdf:rest ] rdf:first ) ;
+        sh:or (
+            [ sh:nodeKind sh:Literal ]
+            [ sh:nodeKind sh:IRI ]
+            [ sh:class odrl:RightOperand ]
+        ) ;
+        sh:message "Each value in rightOperand must be a literal, an IRI, or a RightOperand." ;
+    ] .
+
+:RightOperandReferenceListShape a sh:NodeShape ;
+    sh:node :RdfListShape ;
+    sh:property [
+        sh:path ( [ sh:zeroOrMorePath rdf:rest ] rdf:first ) ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Each value in rightOperandReference must be an IRI." ;
+    ] .
+
+#################################################
+# Logical Constraint = must have one operand
+#################################################
+
+:LogicalConstraintShape a sh:NodeShape ;
+    sh:targetClass odrl:LogicalConstraint ;
+
+    sh:property [
+        sh:path odrl:uid ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A Logical Constraint may have one uid, and it must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path [ sh:alternativePath ( odrl:or odrl:xone odrl:and odrl:andSequence ) ] ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:node :ConstraintListShape ;
+        sh:message "A LogicalConstraint must contain one of odrl:and, odrl:or, odrl:xone, or odrl:andSequence." ;
+    ] .
+
+:ConstraintListShape a sh:NodeShape ;
+    sh:node :RdfListShape ;
+    sh:property [
+        sh:path ( [ sh:zeroOrMorePath rdf:rest ] rdf:first ) ;
+        sh:node :ConstraintShape ;
+        sh:message "Each value in a logical constraint must be a Constraint." ;
+    ] .
+
+
+#################################################
+# Valid RDF list inspired by shsh:ListShape from SHACL-SHACL
+#################################################
+
+:RdfListShape a sh:NodeShape ;
+    sh:property [
+        sh:path [ sh:zeroOrMorePath rdf:rest ] ;
+        sh:hasValue rdf:nil ;
+        sh:node :RdfListNodeShape ;
+    ] .
+
+:RdfListNodeShape a sh:NodeShape ;
+    sh:or (
+        [
+            sh:hasValue rdf:nil ;
+            sh:property [
+                sh:path rdf:first ;
+                sh:maxCount 0 ;
+            ] ;
+            sh:property [
+                sh:path rdf:rest ;
+                sh:maxCount 0 ;
+            ]
+        ]
+        [
+            sh:not [ sh:hasValue rdf:nil ] ;
+            sh:property [
+                sh:path rdf:first ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ] ;
+            sh:property [
+                sh:path rdf:rest ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ]
+        ]
+    ) .
+    

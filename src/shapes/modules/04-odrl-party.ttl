@@ -1,0 +1,57 @@
+#################################################
+# Shape for Party
+#################################################
+
+:PartyTypeShape a sh:NodeShape ;
+    sh:severity sh:Warning ;
+    sh:or (
+        [
+            sh:property [
+                sh:path rdf:type ;
+                sh:hasValue odrl:Party ;
+            ]
+        ]
+        [
+            sh:property [
+                sh:path rdf:type ;
+                sh:hasValue odrl:PartyCollection ;
+            ]
+        ]
+    ) ;
+    sh:message "The party should be typed as odrl:Party or odrl:PartyCollection." .
+
+:PartyShape a sh:NodeShape ;
+    sh:node :PartyTypeShape ;
+
+    sh:property [
+        sh:path odrl:uid ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A Party may have one uid, and it must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:partOf ;
+        sh:node :PartyCollectionShape ;
+        sh:message "partOf should point to an PartyCollection." ;
+    ] .
+
+:PartyCollectionShape a sh:NodeShape ;
+    sh:node :PartyShape ;
+
+    sh:property [
+        sh:path odrl:source ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A PartyCollection may have one source, and it must be an IRI." ;
+    ] ;
+    
+    sh:property [
+        sh:path odrl:refinement ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each PartyCollection refinement must be a Constraint or LogicalConstraint." ;
+    ] .
+    

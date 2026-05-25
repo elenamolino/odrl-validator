@@ -6,10 +6,10 @@ import { readFileSync } from 'fs';
 import { join } from "path";
 import { Validator } from "shacl-engine"
 import { reason } from "eyeling";
-import { Atomizer} from "odrl-atomization";
+import { Atomizer } from "odrl-atomization";
 export class ODRLValidator implements IODRLValidator {
     private atomizer: Atomizer;
-    
+
     protected shaclStore: Store;
     private shaclValidator: Validator;
 
@@ -20,7 +20,7 @@ export class ODRLValidator implements IODRLValidator {
         // ugly way to load in shacl file, should be more generic. 
         // Also, this approach makes it so the component will not work in the browser
         const parser = new Parser()
-        const rawShape = readFileSync(join(__dirname, "shapes", "policy-core.ttl"), "utf-8")
+        const rawShape = readFileSync(join(__dirname, "shapes", "odrl-shapes.ttl"), "utf-8")
         this.shaclStore = new Store(parser.parse(rawShape))
 
         this.shaclValidator = new Validator(this.shaclStore, { factory: new DataFactory() });
@@ -37,15 +37,48 @@ export class ODRLValidator implements IODRLValidator {
             validationResults: [],
             conflicts: []
         }
+
         const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
         if (report.conforms === false) {
-            output.validationResults = (report.results).map((result: any) => ({
-                message: result.message[0].value,
-                focusNode: result.focusNode?.value,
-                resultSeverity: result.severity?.value
-            }));
+
+            const getResults = (result: any): any[] => {
+                if (result.results && result.results.length > 0) {
+                    return result.results.flatMap((r: any) => getResults(r))
+                }
+
+                const messages =
+                    result.message?.map((m: any) => m.value)
+                    ?? result._message?.()?.map((m: any) => m.value)
+                    ?? []
+
+                return messages.map((message: string) => ({
+                    message,
+                    focusNode: result.focusNode?.value,
+                    valueNode: result.value?.value,
+                    resultSeverity: result.severity?.value
+                }))
+            }
+
+            output.validationResults = report.results.flatMap((result: any) =>
+                getResults(result)
+            )
+
+            const duplicatedErrorResults = new Set<string>()
+
+            output.validationResults = output.validationResults.filter((result: any) => {
+                const key = JSON.stringify(result)
+                return duplicatedErrorResults.has(key) ? false : duplicatedErrorResults.add(key)
+            })
+
+            const hasViolation = output.validationResults.some((result: any) =>
+                result.resultSeverity === "http://www.w3.org/ns/shacl#Violation"
+            )
+
+            output.valid = !hasViolation
+
             return output
         }
+
 
         output.valid = report.conforms;
 

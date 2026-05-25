@@ -1,0 +1,184 @@
+
+#################################################
+# Shape for Rule = must have one action
+#################################################
+
+:RuleShape a sh:NodeShape ;
+    sh:targetClass odrl:Permission, odrl:Prohibition, odrl:Duty ;
+
+    sh:property [
+        sh:path odrl:uid ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A Rule may have one uid, and it must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:action ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Rule must have one action." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:action ;
+        sh:or (
+            [ sh:node :ActionShape ]
+            [ sh:node :ActionWithRefinementShape ]
+        );
+        sh:message "Action should be a supported action or a blank node with rdf:value and odrl:refinement." ;    
+    ] ;
+
+    sh:property [
+        sh:path odrl:target ;
+        sh:maxCount 1 ;
+        sh:message "A Rule may have one target." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:target ;
+        sh:node :AssetShape ;
+        sh:message "Target should be a Asset or AssetCollection." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:maxCount 1 ;
+        sh:message "A Rule may have at most one assignee." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assignee ;
+        sh:or (
+            [ sh:node :PartyShape ]
+            [ sh:node :PartyCollectionShape ]
+        ) ;
+        sh:message "The assignee should be a Party or PartyCollection." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:maxCount 1 ;
+        sh:message "A Rule may have at most one assigner." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:or (
+            [ sh:node :PartyShape ]
+            [ sh:node :PartyCollectionShape ]
+        ) ;
+        sh:message "The assigner should be a Party or PartyCollection." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:constraint ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each constraint must conform to ODRL constraint or ODRL logical constraint." ;
+    ] .
+
+# Permission = must have one target
+
+:PermissionShape a sh:NodeShape ;
+    sh:targetClass odrl:Permission ;
+    sh:node :RuleShape ;
+
+    sh:property [
+        sh:path odrl:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Permission must have one odrl:target." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:duty ;  
+        sh:node :DutyShape ;  
+        sh:message "Each Permission duty must conform to ODRL duty." ;
+    ] .
+
+# Prohibition = must have one target
+
+:ProhibitionShape a sh:NodeShape ;
+    sh:targetClass odrl:Prohibition ;
+    sh:node :RuleShape ;
+
+    sh:property [
+        sh:path odrl:target ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "A Prohibition must have one odrl:target." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:remedy ;
+        sh:node :DutyShape ;
+        sh:message "Each Prohibition remedy must conform to ODRL duty." ;
+    ] .
+
+# Duty = Rule
+
+:DutyShape a sh:NodeShape ;
+    sh:targetClass odrl:Duty ;
+    sh:node :RuleShape ;
+
+    sh:property [
+        sh:path odrl:consequence ;  
+        sh:node :DutyShape ;  
+        sh:message "Each Duty consequence must conform to ODRL duty." ;
+    ] .
+
+# Rules for offer
+
+:OfferPermissionShape a sh:NodeShape ;
+    sh:node :PermissionShape ;
+    sh:node :OfferRequiredAssignerShape .
+
+:OfferProhibitionShape a sh:NodeShape ;
+    sh:node :ProhibitionShape ;
+    sh:node :OfferRequiredAssignerShape .
+
+:OfferDutyShape a sh:NodeShape ;
+    sh:node :DutyShape ;
+    sh:node :OfferRequiredAssignerShape .
+
+:OfferRequiredAssignerShape a sh:NodeShape ;
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 1 ;
+        sh:message "An Offer rule must have one assigner." ;
+    ] .
+
+# Rules for Agreement
+
+:AgreementPermissionShape a sh:NodeShape ;
+    sh:node :PermissionShape ;
+    sh:node :AgreementRequiredAssignerShape ;
+    sh:node :AgreementRequiredAssigneeShape .
+
+:AgreementProhibitionShape a sh:NodeShape ;
+    sh:node :ProhibitionShape ;
+    sh:node :AgreementRequiredAssignerShape ;
+    sh:node :AgreementRequiredAssigneeShape .
+
+:AgreementDutyShape a sh:NodeShape ;
+    sh:node :DutyShape ;
+    sh:node :AgreementRequiredAssignerShape ;
+    sh:node :AgreementRequiredAssigneeShape .
+
+:AgreementRequiredAssignerShape a sh:NodeShape ;
+    sh:property [
+        sh:path odrl:assigner ;
+        sh:minCount 1 ;
+        sh:message "An Agreement rule must have one assigner." ;
+    ] .
+
+:AgreementRequiredAssigneeShape a sh:NodeShape ;
+    sh:property [
+        sh:path odrl:assignee ;
+        sh:minCount 1 ;
+        sh:message "An Agreement rule must have one assignee." ;
+    ] .
+    

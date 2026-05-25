@@ -1,0 +1,107 @@
+#################################################
+# Shape for Action and Action with refinement
+#################################################
+
+:ActionShape a sh:NodeShape ;
+    sh:node :AllowedActionValueShape ;
+
+    sh:property [
+        sh:path odrl:includedIn ;
+        sh:maxCount 1 ;
+        sh:in ( odrl:use odrl:transfer ) ;
+        sh:message "The value of odrl:includedIn should be either odrl:use or odrl:transfer." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:implies ;
+        sh:node :AllowedActionValueShape ;
+        sh:message "Each implies value should be an Action." ;
+    ] .
+
+:AllowedActionValueShape a sh:NodeShape ;
+    sh:severity sh:Warning ;
+    sh:or ([
+        sh:in (
+            odrl:acceptTracking
+            odrl:aggregate
+            odrl:anonymize
+            odrl:annotate
+            odrl:archive
+            odrl:attribute
+            odrl:compensate
+            odrl:concurrentUse
+            odrl:delete
+            odrl:derive
+            odrl:digitize
+            odrl:display
+            odrl:distribute
+            odrl:ensureExclusivity
+            odrl:execute
+            odrl:extract
+            odrl:give
+            odrl:grantUse
+            odrl:include
+            odrl:index
+            odrl:inform
+            odrl:install
+            odrl:modify
+            odrl:move
+            odrl:nextPolicy
+            odrl:obtainConsent
+            odrl:play
+            odrl:present
+            odrl:print
+            odrl:read
+            odrl:reproduce
+            odrl:reviewPolicy
+            odrl:sell
+            odrl:stream
+            odrl:synchronize
+            odrl:textToSpeech
+            odrl:transfer
+            odrl:transform
+            odrl:translate
+            odrl:uninstall
+            odrl:use
+            odrl:watermark
+            cc:Attribution
+            cc:CommercialUse
+            cc:DerivativeWorks
+            cc:Distribution
+            cc:Notice
+            cc:Reproduction
+            cc:ShareAlike
+            cc:Sharing
+            cc:SourceCode
+            ) 
+    ][ 
+        sh:class odrl:Action 
+    ]) ;
+    sh:message "Action is neither part of the ODRL Vocabulary nor typed as odrl:Action." .
+
+
+:ActionWithRefinementShape a sh:NodeShape ;
+
+    sh:property [
+        sh:path rdf:value ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An action refinement must have one rdf:value." ;
+    ] ;
+
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path rdf:value ;
+        sh:node :AllowedActionValueShape ;
+        sh:message "The action value should be part of the ODRL vocabulary or typed as odrl:Action." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:refinement ;
+        sh:minCount 1 ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "An action with refinement must have a valid refinement." ;
+    ] .
