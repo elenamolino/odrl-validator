@@ -4,7 +4,7 @@ import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
 import { Validator } from "shacl-engine"
 import { EyelingReasoner } from 'N3-utility'
-import { Atomizer } from "odrl-atomization";
+import { Atomizer, RDF } from "odrl-atomization";
 import { RULES } from "./rules/Rules";
 import { SHAPES } from "./shapes/Shapes";
 
@@ -59,20 +59,24 @@ export class ODRLValidator implements IODRLValidator {
         output.valid = report.conforms;
 
         // Notation3 Conflict Detection
-        const conflicts = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
+        const conflictReasoningResult = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
 
-        // unfortunately, @RdfJsReasonInput from the eyeling types cannot be used, so the policies have to be transformed to string
-        // the rules are also kept as string
+        const conflicts = conflictReasoningResult.getQuads(null, RDF.type, "http://example.org/conflict#Conflict", null);
 
-        // TODO: parse the conflicts properly
-        output.conflicts.push({
-            message: new Writer().quadsToString(conflicts.getQuads(null, null, null, null)),
-            type: "DeonticConflict",
-            severity: "error",
-            ruleA: "",
-            ruleB: ""
+        for (const conflict of conflicts) {
+            // TODO: parse the conflicts properly
+            // 1. TODO: rewrite the rules to all have conflict type, the reason and the two rules
+            // 2. TODO: change the rules config (makeRules.ts script)
+            // 3. TODO: create a proper error message
+            const message = new Writer().quadsToString(conflictReasoningResult.getQuads(null, null, null, null));
+            output.conflicts.push({
+                message: message,
+                type: "DeonticConflict",
+                severity: "error",
+                ruleA: "",
+                ruleB: ""
         })
-
+        }
         return output
     }
 }
