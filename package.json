@@ -31,11 +31,11 @@
     "@jeswr/pretty-turtle": "^1.8.2",
     "@rdfjs/types": "^2.0.1",
     "@types/n3": "^1.26.1",
-    "eyeling": "1.22.13",
     "n3": "^2.0.3",
     "odrl-atomization": "^1.0.3",
     "rdf-validate-shacl": "^0.6.5",
-    "shacl-engine": "^1.1.0"
+    "shacl-engine": "^1.1.0",
+    "N3-utility": "github:woutslabbinck/Notation3Utilities"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

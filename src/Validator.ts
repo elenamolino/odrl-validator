@@ -3,7 +3,7 @@ import { Parser, Store, Writer } from 'n3';
 import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
 import { Validator } from "shacl-engine"
-import { reason } from "eyeling";
+import { EyelingReasoner } from 'N3-utility'
 import { Atomizer } from "odrl-atomization";
 import { RULES } from "./rules/Rules";
 import { SHAPES } from "./shapes/Shapes";
@@ -59,14 +59,14 @@ export class ODRLValidator implements IODRLValidator {
         output.valid = report.conforms;
 
         // Notation3 Conflict Detection
-        const conflicts = reason({ proofComments: false }, new Writer().quadsToString(atomizedPolicies) + "\n" + this.n3Rules)
+        const conflicts = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
 
         // unfortunately, @RdfJsReasonInput from the eyeling types cannot be used, so the policies have to be transformed to string
         // the rules are also kept as string
 
         // TODO: parse the conflicts properly
         output.conflicts.push({
-            message: conflicts,
+            message: new Writer().quadsToString(conflicts.getQuads(null, null, null, null)),
             type: "DeonticConflict",
             severity: "error",
             ruleA: "",

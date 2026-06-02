@@ -8,7 +8,7 @@ See the [wiki](https://github.com/elenamolino/odrl-validator/wiki)
 ### Validator
 - [x] proper ingestion of the rules and shapes (to be browser compatible)
   - [x] change constructor (also have defaults)
-  - [x] shape and rules as string (like ODRL Evaluator)
+  - [x] shape and rules as string (like ODRL Evaluator) 
   - [x] split core and browser index.ts
   - [x] Add build script
 - [ ] Fix issue regarding ODRL actions on the shape
