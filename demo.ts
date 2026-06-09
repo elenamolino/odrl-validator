@@ -27,38 +27,45 @@ async function main() {
 
     const result = await validator.validate(testCase.representation);
 
+    console.log('Expected:', testCase.expected.valid);
+    if (!testCase.expected.valid) {
+      console.log('Reason:', testCase.expected.validationResults);
+    }
     console.log('Valid:', result.valid);
-    // const testcaseValidator = new TestCaseValidator({odrlValidator: validator})
-    // const testCaseResult = await testcaseValidator.validateTestCase(cases[2]);
-    // console.log('Expected:', testCaseResult.expectedResult.valid);
 
     if (result.validationResults.length > 0) {
       console.log('Errors:', result.validationResults);
     }
+    console.log('···············································');
   }
 
 
   // DEMO: testing out the reasoning
   const conflictPolicy = `
-  @prefix odrl: <http://www.w3.org/ns/odrl/2/> .
-@prefix ex:   <http://example.org/> .
+    @prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+    @prefix ex:   <http://example.org/> .
 
-ex:policy
-    a odrl:Policy ;
-    odrl:prohibition ex:prohibitionRule ;
-    odrl:duty        ex:dutyRule .
+    ex:policy
+        a odrl:Policy ;
+        odrl:prohibition ex:prohibitionRule ;
+        odrl:duty        ex:dutyRule .
 
-ex:prohibitionRule
-    a odrl:Prohibition ;
-    odrl:target   ex:resource ;
-    odrl:assignee ex:alice ;
-    odrl:action   odrl:use .
+    ex:prohibitionRule
+        a odrl:Prohibition ;
+        odrl:target   ex:resource ;
+        odrl:assignee ex:alice ;
+        odrl:action   odrl:use .
 
-ex:dutyRule
-    a odrl:Duty ;
-    odrl:target   ex:resource ;
-    odrl:assignee ex:alice ;
-    odrl:action   odrl:use .`
+    ex:dutyRule
+        a odrl:Duty ;
+        odrl:target   ex:resource ;
+        odrl:assignee ex:alice ;
+        odrl:action   odrl:use .
+        
+    ex:alice a odrl:Party .
+    ex:resource a odrl:Asset .
+  `
+  
   console.log(await validator.validate(new Parser().parse(conflictPolicy)))
 
 }

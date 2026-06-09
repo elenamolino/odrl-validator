@@ -47,14 +47,46 @@ export class ODRLValidator implements IODRLValidator {
         }
 
         const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
-        if (report.conforms === false) {            
-            output.validationResults = (report.results).map((result: any) => ({
-                message: result.message?.[0]?.value,
-                focusNode: result.focusNode?.value,
-                resultSeverity: result.severity?.value
-            }));
+        if (report.conforms === false) {
+
+            const getResults = (result: any): any[] => {
+                if (result.results && result.results.length > 0) {
+                    return result.results.flatMap((r: any) => getResults(r))
+                }
+
+                const messages =
+                    result.message?.map((m: any) => m.value)
+                    ?? result._message?.()?.map((m: any) => m.value)
+                    ?? []
+
+                return messages.map((message: string) => ({
+                    message,
+                    focusNode: result.focusNode?.value,
+                    valueNode: result.value?.value,
+                    resultSeverity: result.severity?.value
+                }))
+            }
+
+            output.validationResults = report.results.flatMap((result: any) =>
+                getResults(result)
+            )
+
+            const duplicatedErrorResults = new Set<string>()
+
+            output.validationResults = output.validationResults.filter((result: any) => {
+                const key = JSON.stringify(result)
+                return duplicatedErrorResults.has(key) ? false : duplicatedErrorResults.add(key)
+            })
+
+            const hasViolation = output.validationResults.some((result: any) =>
+                result.resultSeverity === "http://www.w3.org/ns/shacl#Violation"
+            )
+
+            output.valid = !hasViolation
+
             return output
         }
+
 
         output.valid = report.conforms;
 

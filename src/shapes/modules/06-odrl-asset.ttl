@@ -1,0 +1,63 @@
+#################################################
+# Shape for Asset
+#################################################
+
+:AssetTypeShape a sh:NodeShape ;
+    sh:severity sh:Warning ;
+    sh:or (
+        [
+            sh:property [
+                sh:path rdf:type ;
+                sh:hasValue odrl:Asset ;
+            ]
+        ]
+        [
+            sh:property [
+                sh:path rdf:type ;
+                sh:hasValue odrl:AssetCollection ;
+            ]
+        ]
+    ) ;
+    sh:message "The asset should be typed as odrl:Asset or odrl:AssetCollection." .
+
+:AssetShape a sh:NodeShape ;
+    sh:node :AssetTypeShape ;
+
+    sh:property [
+        sh:path odrl:uid ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "An Asset may have one uid, and it must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:partOf ;
+        sh:node :AssetCollectionShape ;
+        sh:message "partOf should point to an AssetCollection." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:hasPolicy ;
+        sh:nodeKind sh:IRI ;
+        sh:message "hasPolicy must point to a Policy IRI." ;
+    ] .
+
+:AssetCollectionShape a sh:NodeShape ;
+    sh:node :AssetShape ;
+    
+    sh:property [
+        sh:path odrl:source ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "An AssetCollection may have one source, and it must be an IRI." ;
+    ] ;
+    
+    sh:property [
+        sh:path odrl:refinement ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "Each AssetCollection refinement must be a Constraint or LogicalConstraint." ;
+    ] .
+    

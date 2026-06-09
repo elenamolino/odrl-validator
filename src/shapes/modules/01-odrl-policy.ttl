@@ -1,0 +1,108 @@
+#################################################
+# Shape for Policy
+#################################################
+
+:PolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy ;
+    sh:nodeKind sh:IRI ;
+    sh:message "Policies must be identified by an IRI." ;
+
+    sh:property [
+        sh:path odrl:uid ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "A Policy may have one uid, and it must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path [ sh:alternativePath ( odrl:permission odrl:prohibition odrl:obligation ) ] ;
+        sh:minCount 1 ;
+        sh:message "Policies must have at least one permission, obligation or prohibition." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:permission ;
+        sh:node :PermissionShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:obligation ;
+        sh:node :DutyShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:prohibition ;
+        sh:node :ProhibitionShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:profile ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Profile must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:inheritFrom ;
+        sh:nodeKind sh:IRI ;
+        sh:message "InheritFrom must be an IRI." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:conflict ;
+        sh:nodeKind sh:IRI ;
+        sh:in ( odrl:perm odrl:prohibit odrl:invalid ) ;
+        sh:maxCount 1 ;
+        sh:message "Conflict strategy must appear at most once and be a ConflictTerm: odrl:perm, odrl:prohibit, or odrl:invalid." ;
+    ] .
+
+
+# Set = Policy
+
+:SetPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Set ;
+    sh:node :PolicyShape .
+
+
+# Offer = Rules must have one assigner
+
+:OfferPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Offer ;
+    sh:node :PolicyShape ;
+
+    sh:property [
+        sh:path odrl:permission ;
+        sh:node :OfferPermissionShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:prohibition ;
+        sh:node :OfferProhibitionShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:obligation ;
+        sh:node :OfferDutyShape ;
+    ] .
+
+
+# Agreement = Rules must have one assigner and one assignee
+
+:AgreementPolicyShape a sh:NodeShape ;
+    sh:targetClass odrl:Agreement ;
+    sh:node :PolicyShape ;
+
+    sh:property [
+        sh:path odrl:permission ;
+        sh:node :AgreementPermissionShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:prohibition ;
+        sh:node :AgreementProhibitionShape ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:obligation ;
+        sh:node :AgreementDutyShape ;
+    ] .
+    
