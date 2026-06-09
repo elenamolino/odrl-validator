@@ -89,6 +89,8 @@ export class ODRLValidator implements IODRLValidator {
             if (hasViolation) {
                 return output
             }
+        } else {
+            output.valid = true;
         }
 
         // Notation3 Conflict Detection
