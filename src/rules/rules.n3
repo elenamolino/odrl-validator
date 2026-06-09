@@ -1,4 +1,4 @@
-export const RULES: string = `@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 @prefix log:  <http://www.w3.org/2000/10/swap/log#> .
 @prefix detection: <https://w3id.org/force/detection#> .
 
@@ -43,4 +43,4 @@ export const RULES: string = `@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
     ?conflict a detection:Conflict, detection:DeonticConflict ;
         detection:rules ?prohibition , ?permission ;
         detection:reason "The permission and prohibition have the same assignee, target and action" .
-}.`;
+}.

@@ -7,6 +7,7 @@ import { EyelingReasoner } from 'n3-utility'
 import { Atomizer, RDF } from "odrl-atomization";
 import { RULES } from "./rules/Rules";
 import { SHAPES } from "./shapes/Shapes";
+import { DETECTION } from "./util/Vocabulary";
 
 export class ODRLValidator implements IODRLValidator {
     private atomizer: Atomizer;
@@ -93,20 +94,19 @@ export class ODRLValidator implements IODRLValidator {
         // Notation3 Conflict Detection
         const conflictReasoningResult = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
 
-        const conflicts = conflictReasoningResult.getQuads(null, RDF.type, "http://example.org/conflict#Conflict", null);
-
+        const conflicts = conflictReasoningResult.getQuads(null, RDF.type, DETECTION.Conflict, null);
         for (const conflict of conflicts) {
-            // TODO: parse the conflicts properly
-            // 1. TODO: rewrite the rules to all have conflict type, the reason and the two rules
-            // 2. TODO: change the rules config (makeRules.ts script)
-            // 3. TODO: create a proper error message
-            const message = new Writer().quadsToString(conflictReasoningResult.getQuads(null, null, null, null));
+            
+            // NOTE: we expect that the inconsistency detection rules are well formed. 
+            // That is they produce an output with two rules and a reason.
+            const reason = conflictReasoningResult.getObjects(conflict.subject, DETECTION.reason, null)[0].value;
+            const rules: string[] = conflictReasoningResult.getObjects(conflict.subject, DETECTION.rules, null).map(object => object.value);
             output.conflicts.push({
-                message: message,
+                message: reason,
                 type: "DeonticConflict",
                 severity: "error",
-                ruleA: "",
-                ruleB: ""
+                ruleA: rules[0],
+                ruleB: rules[1]
         })
         }
         return output

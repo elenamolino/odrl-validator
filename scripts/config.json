@@ -3,6 +3,6 @@
         "odrl-shapes.ttl"
     ],
     "rules":[
-        "rule1.n3"
+        "rules.n3"
     ]
 }

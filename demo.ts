@@ -13,7 +13,7 @@ async function main() {
 
   const rawShape = readFileSync(join(__dirname, "src", "shapes", "odrl-shapes.ttl"), "utf-8");
   const shape = new Parser().parse(rawShape)
-  const notation3Rules = readFileSync(join(__dirname, "src", "rules", "rule1.n3"), "utf-8")
+  const notation3Rules = readFileSync(join(__dirname, "src", "rules", "rules.n3"), "utf-8")
 
   // DEMO: testing out the validator
   const validator = new ODRLValidator(
@@ -47,8 +47,15 @@ async function main() {
 
     ex:policy
         a odrl:Policy ;
+        odrl:permission  ex:permissionRule ;
         odrl:prohibition ex:prohibitionRule ;
         odrl:duty        ex:dutyRule .
+
+    ex:permissionRule
+        a odrl:Permission ;
+        odrl:target   ex:resource ;
+        odrl:assignee ex:alice ;
+        odrl:action   odrl:use .
 
     ex:prohibitionRule
         a odrl:Prohibition ;
