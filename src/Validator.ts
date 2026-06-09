@@ -3,7 +3,7 @@ import { Parser, Store, Writer } from 'n3';
 import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
 import { Validator } from "shacl-engine"
-import { EyelingReasoner } from 'N3-utility'
+import { EyelingReasoner } from 'n3-utility'
 import { Atomizer, RDF } from "odrl-atomization";
 import { RULES } from "./rules/Rules";
 import { SHAPES } from "./shapes/Shapes";
