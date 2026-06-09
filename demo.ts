@@ -11,7 +11,7 @@ async function main() {
   console.log(`Loaded ${cases.length} test cases`);
 
 
-  const rawShape = readFileSync(join(__dirname, "src", "shapes", "policy-core.ttl"), "utf-8");
+  const rawShape = readFileSync(join(__dirname, "src", "shapes", "odrl-shapes.ttl"), "utf-8");
   const shape = new Parser().parse(rawShape)
   const notation3Rules = readFileSync(join(__dirname, "src", "rules", "rule1.n3"), "utf-8")
 
