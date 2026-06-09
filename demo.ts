@@ -2,7 +2,6 @@ import { Parser } from "n3";
 import { loadODRLTestCases, ODRLValidator, TestCaseValidator } from "./src"
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { config } from "node:process";
 
 
 async function main() {

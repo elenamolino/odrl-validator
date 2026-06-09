@@ -85,11 +85,11 @@ export class ODRLValidator implements IODRLValidator {
 
             output.valid = !hasViolation
 
-            return output
+            // If there are any violations, conflict detection does not make sense
+            if (hasViolation) {
+                return output
+            }
         }
-
-
-        output.valid = report.conforms;
 
         // Notation3 Conflict Detection
         const conflictReasoningResult = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
