@@ -38,9 +38,11 @@ declare module "shacl-engine" {
    */
   export interface ValidationReport {
     conforms: boolean;
-    // If you need more report fields later, add them here.
-    // e.g. results?: unknown[];
-    // dataset?: DatasetCore;
+    results: {
+      message?: Term[];
+      focusnode?: Term;
+      severity?: Term;
+    }[]
   }
 
   export class Validator {

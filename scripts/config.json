@@ -1,0 +1,8 @@
+{
+    "shapes": [
+        "policy-core.ttl"
+    ],
+    "rules":[
+        "rule1.n3"
+    ]
+}

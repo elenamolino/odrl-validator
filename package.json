@@ -4,9 +4,22 @@
   "description": "Validating ODRL policies regarding syntax, semantics and consistency",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "browser": {
+    "./dist/index.js": "./dist/index.browser.js",
+    "./dist/index.d.ts": "./dist/index.browser.d.ts"
+  },  
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "npm run clean && npm run makeRules && npm run makeShapes && tsc",
+    "makeRules": "tsx scripts/MakeRules.ts ",
+    "makeShapes": "tsx scripts/MakeShapes.ts ",
+    "clean": "rm -rf ./dist",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demo": "tsx demo.ts"
+    "demo": "tsx demo.ts",
+    "prepare": "npm run build",
+    "release": "npm run build && npm publish --access public"
   },
   "keywords": [
     "ODRL",
@@ -18,11 +31,11 @@
     "@jeswr/pretty-turtle": "^1.8.2",
     "@rdfjs/types": "^2.0.1",
     "@types/n3": "^1.26.1",
-    "eyeling": "1.22.13",
     "n3": "^2.0.3",
     "odrl-atomization": "^1.0.3",
     "rdf-validate-shacl": "^0.6.5",
-    "shacl-engine": "^1.1.0"
+    "shacl-engine": "^1.1.0",
+    "N3-utility": "github:woutslabbinck/Notation3Utilities"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

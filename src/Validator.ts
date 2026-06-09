@@ -2,11 +2,12 @@ import { Quad } from "@rdfjs/types";
 import { Parser, Store, Writer } from 'n3';
 import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
-import { readFileSync } from 'fs';
-import { join } from "path";
 import { Validator } from "shacl-engine"
-import { reason } from "eyeling";
-import { Atomizer } from "odrl-atomization";
+import { EyelingReasoner } from 'N3-utility'
+import { Atomizer, RDF } from "odrl-atomization";
+import { RULES } from "./rules/Rules";
+import { SHAPES } from "./shapes/Shapes";
+
 export class ODRLValidator implements IODRLValidator {
     private atomizer: Atomizer;
 
@@ -15,27 +16,34 @@ export class ODRLValidator implements IODRLValidator {
 
     private n3Rules: string;
 
-    public constructor() {
+    public constructor(config?: { shape?: Quad[], n3Rules?: string }) {
+        let shape: Quad[] = new Parser().parse(SHAPES);
+        let n3Rules: string = RULES;
+
+        if (config){
+            shape = config.shape ?? shape;
+            n3Rules = config.n3Rules ?? n3Rules;
+        }
         this.atomizer = new Atomizer();
-        // ugly way to load in shacl file, should be more generic. 
-        // Also, this approach makes it so the component will not work in the browser
-        const parser = new Parser()
-        const rawShape = readFileSync(join(__dirname, "shapes", "odrl-shapes.ttl"), "utf-8")
-        this.shaclStore = new Store(parser.parse(rawShape))
+        this.shaclStore = new Store(shape);
 
         this.shaclValidator = new Validator(this.shaclStore, { factory: new DataFactory() });
-        this.n3Rules = readFileSync(join(__dirname, "rules", "rule1.n3"), "utf-8")
+        this.n3Rules = n3Rules;
     }
 
     public async validate(policies: Quad[]): Promise<ValidatorResult> {
-        // SHACL validation bit (note: RDF-Validate-SHACL is ESM, so we use the shacl-engine) https://github.com/woutslabbinck/ODRL-shape/blob/main/index.ts
-        // Also, shacl-engine is made for speed
-        const atomizedPolicies = await this.atomizer.atomize(policies);
-
-        const output = {
+        const output: ValidatorResult = {
             valid: false,
             validationResults: [],
             conflicts: []
+        }
+
+        let atomizedPolicies: Quad[];
+        try {
+            atomizedPolicies = await this.atomizer.atomize(policies);
+        } catch (error) {
+            console.error("Error atomizing policies:", error);
+            atomizedPolicies = policies;
         }
 
         const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
@@ -83,14 +91,24 @@ export class ODRLValidator implements IODRLValidator {
         output.valid = report.conforms;
 
         // Notation3 Conflict Detection
-        const conflicts = reason({ proofComments: false }, new Writer().quadsToString(atomizedPolicies) + "\n" + this.n3Rules)
+        const conflictReasoningResult = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
 
-        // unfortunately, @RdfJsReasonInput from the eyeling types cannot be used, so the policies have to be transformed to string
-        // the rules are also kept as string
+        const conflicts = conflictReasoningResult.getQuads(null, RDF.type, "http://example.org/conflict#Conflict", null);
 
-        // TODO: parse the conflicts properly
-        output.conflicts.push(conflicts)
-
+        for (const conflict of conflicts) {
+            // TODO: parse the conflicts properly
+            // 1. TODO: rewrite the rules to all have conflict type, the reason and the two rules
+            // 2. TODO: change the rules config (makeRules.ts script)
+            // 3. TODO: create a proper error message
+            const message = new Writer().quadsToString(conflictReasoningResult.getQuads(null, null, null, null));
+            output.conflicts.push({
+                message: message,
+                type: "DeonticConflict",
+                severity: "error",
+                ruleA: "",
+                ruleB: ""
+        })
+        }
         return output
     }
 }
