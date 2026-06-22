@@ -2,26 +2,7 @@
 # Shape for Asset
 #################################################
 
-:AssetTypeShape a sh:NodeShape ;
-    sh:severity sh:Warning ;
-    sh:or (
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:Asset ;
-            ]
-        ]
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:AssetCollection ;
-            ]
-        ]
-    ) ;
-    sh:message "The asset should be typed as odrl:Asset or odrl:AssetCollection." .
-
 :AssetShape a sh:NodeShape ;
-    sh:node :AssetTypeShape ;
 
     sh:property [
         sh:path odrl:uid ;
@@ -43,7 +24,6 @@
     ] .
 
 :AssetCollectionShape a sh:NodeShape ;
-    sh:node :AssetShape ;
     
     sh:property [
         sh:path odrl:source ;

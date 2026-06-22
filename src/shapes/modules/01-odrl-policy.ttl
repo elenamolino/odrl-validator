@@ -44,17 +44,32 @@
     sh:property [
         sh:path odrl:inheritFrom ;
         sh:nodeKind sh:IRI ;
-        sh:message "InheritFrom must be an IRI." ;
+        sh:class odrl:Policy ;
+        sh:message "inheritFrom must reference an existing odrl:Policy." ;
     ] ;
 
     sh:property [
         sh:path odrl:conflict ;
         sh:nodeKind sh:IRI ;
-        sh:in ( odrl:perm odrl:prohibit odrl:invalid ) ;
         sh:maxCount 1 ;
         sh:message "Conflict strategy must appear at most once and be a ConflictTerm: odrl:perm, odrl:prohibit, or odrl:invalid." ;
     ] .
 
+:ConflictStrategyShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy, odrl:Set, odrl:Offer, odrl:Agreement ;
+    sh:message "An unknown odrl:conflict strategy requires a declared odrl:profile." ;
+    sh:or (
+        [ sh:property [ 
+            sh:path odrl:conflict ; 
+            sh:in ( odrl:perm odrl:prohibit odrl:invalid ) 
+            ] 
+        ]
+        [ sh:property [ 
+            sh:path odrl:profile ; 
+            sh:minCount 1 
+            ] 
+        ]
+    ) .
 
 # Set = Policy
 

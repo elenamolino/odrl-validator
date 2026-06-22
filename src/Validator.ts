@@ -39,6 +39,16 @@ export class ODRLValidator implements IODRLValidator {
             conflicts: []
         }
 
+        // No valid RDF 
+        if (!policies || policies.length === 0) {
+            output.valid = false;
+            output.validationResults.push({
+                message: "No valid policy provided"
+            })
+            return output;
+        }
+
+        // Normalization of the policies
         let atomizedPolicies: Quad[];
         try {
             atomizedPolicies = await this.atomizer.atomize(policies);
@@ -47,6 +57,7 @@ export class ODRLValidator implements IODRLValidator {
             atomizedPolicies = policies;
         }
 
+        // SHACL Validation
         const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
         if (report.conforms === false) {
 
@@ -64,14 +75,14 @@ export class ODRLValidator implements IODRLValidator {
                     message,
                     focusNode: result.focusNode?.value,
                     valueNode: result.value?.value,
-                    resultSeverity: result.severity?.value
+                    severity: result.severity?.value
                 }))
             }
 
             output.validationResults = report.results.flatMap((result: any) =>
                 getResults(result)
             )
-
+            
             const duplicatedErrorResults = new Set<string>()
 
             output.validationResults = output.validationResults.filter((result: any) => {
@@ -80,7 +91,7 @@ export class ODRLValidator implements IODRLValidator {
             })
 
             const hasViolation = output.validationResults.some((result: any) =>
-                result.resultSeverity === "http://www.w3.org/ns/shacl#Violation"
+                result.severity === "http://www.w3.org/ns/shacl#Violation"
             )
 
             output.valid = !hasViolation

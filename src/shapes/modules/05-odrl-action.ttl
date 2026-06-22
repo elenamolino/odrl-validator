@@ -3,7 +3,6 @@
 #################################################
 
 :ActionShape a sh:NodeShape ;
-    sh:node :AllowedActionValueShape ;
 
     sh:property [
         sh:path odrl:includedIn ;
@@ -16,6 +15,25 @@
         sh:path odrl:implies ;
         sh:node :AllowedActionValueShape ;
         sh:message "Each implies value should be an Action." ;
+    ] .
+
+:ActionWithRefinementShape a sh:NodeShape ;
+
+    sh:property [
+        sh:path rdf:value ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An action refinement must have one rdf:value." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:refinement ;
+        sh:minCount 1 ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "An action with refinement must have a valid refinement." ;
     ] .
 
 :AllowedActionValueShape a sh:NodeShape ;
@@ -73,35 +91,29 @@
             cc:ShareAlike
             cc:Sharing
             cc:SourceCode
+            # Deprecated ODRL terms
+            odrl:append
+            odrl:appendTo
+            odrl:copy
+            odrl:export
+            odrl:lease
+            odrl:license
+            odrl:lend
+            odrl:pay
+            odrl:preview
+            odrl:secondaryUse
+            odrl:share
+            odrl:write
+            odrl:writeTo
+            odrl:adHocShare
+            odrl:extractChar
+            odrl:extractPage
+            odrl:extractWord
+            odrl:timedCount
             ) 
     ][ 
         sh:class odrl:Action 
+    ][ 
+        sh:nodeKind sh:BlankNode 
     ]) ;
     sh:message "Action is neither part of the ODRL Vocabulary nor typed as odrl:Action." .
-
-
-:ActionWithRefinementShape a sh:NodeShape ;
-
-    sh:property [
-        sh:path rdf:value ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:message "An action refinement must have one rdf:value." ;
-    ] ;
-
-    sh:property [
-        sh:severity sh:Warning ;
-        sh:path rdf:value ;
-        sh:node :AllowedActionValueShape ;
-        sh:message "The action value should be part of the ODRL vocabulary or typed as odrl:Action." ;
-    ] ;
-
-    sh:property [
-        sh:path odrl:refinement ;
-        sh:minCount 1 ;
-        sh:or (
-            [ sh:node :ConstraintShape ]
-            [ sh:node :LogicalConstraintShape ]
-        ) ;
-        sh:message "An action with refinement must have a valid refinement." ;
-    ] .

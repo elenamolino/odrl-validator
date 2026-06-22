@@ -20,13 +20,25 @@
         sh:message "A Rule must have one action." ;
     ] ;
     sh:property [
-        sh:severity sh:Warning ;
         sh:path odrl:action ;
         sh:or (
+            [ sh:nodeKind sh:IRI ]
             [ sh:node :ActionShape ]
             [ sh:node :ActionWithRefinementShape ]
         );
         sh:message "Action should be a supported action or a blank node with rdf:value and odrl:refinement." ;    
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:action ;
+        sh:node :AllowedActionValueShape ;
+        sh:message "Action is neither part of the ODRL Vocabulary nor typed as odrl:Action." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path (odrl:action rdf:value) ;
+        sh:node :AllowedActionValueShape ;
+        sh:message "Action is neither part of the ODRL Vocabulary nor typed as odrl:Action." ;
     ] ;
 
     sh:property [
@@ -35,23 +47,42 @@
         sh:message "A Rule may have one target." ;
     ] ;
     sh:property [
+        sh:path odrl:target ;
+        sh:or (
+            [ sh:nodeKind sh:IRI ]
+            [ sh:node :AssetShape ]
+            [ sh:node :AssetCollectionShape ]
+        );
+        sh:message "Target should be a supported asset or a blank node with rdf:value." ;    
+    ] ;
+    sh:property [
         sh:severity sh:Warning ;
         sh:path odrl:target ;
-        sh:node :AssetShape ;
+        sh:or (
+            [ sh:class odrl:Asset ]
+            [ sh:class odrl:AssetCollection ]
+        ) ;
         sh:message "Target should be a Asset or AssetCollection." ;
     ] ;
 
     sh:property [
+    sh:path odrl:assignee ;
+    sh:maxCount 1 ;
+    sh:message "A Rule may have at most one assignee." ;
+    ] ;
+    sh:property [
         sh:path odrl:assignee ;
-        sh:maxCount 1 ;
-        sh:message "A Rule may have at most one assignee." ;
+        sh:or (
+            [ sh:node :PartyShape ]
+            [ sh:node :PartyCollectionShape ]
+        );
     ] ;
     sh:property [
         sh:severity sh:Warning ;
         sh:path odrl:assignee ;
         sh:or (
-            [ sh:node :PartyShape ]
-            [ sh:node :PartyCollectionShape ]
+            [ sh:class odrl:Party ]
+            [ sh:class odrl:PartyCollection ]
         ) ;
         sh:message "The assignee should be a Party or PartyCollection." ;
     ] ;
@@ -62,11 +93,19 @@
         sh:message "A Rule may have at most one assigner." ;
     ] ;
     sh:property [
-        sh:severity sh:Warning ;
         sh:path odrl:assigner ;
         sh:or (
             [ sh:node :PartyShape ]
             [ sh:node :PartyCollectionShape ]
+        );        
+        sh:message "Assigner should be a supported party or a blank node with rdf:value." ;    
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:or (
+            [ sh:class odrl:Party ]
+            [ sh:class odrl:PartyCollection ]
         ) ;
         sh:message "The assigner should be a Party or PartyCollection." ;
     ] ;
@@ -78,7 +117,49 @@
             [ sh:node :LogicalConstraintShape ]
         ) ;
         sh:message "Each constraint must conform to ODRL constraint or ODRL logical constraint." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:constraint ;
+        sh:node :AllowedConstraintValueShape ;
+        sh:message "Constraint elements are neither part of the ODRL Vocabulary nor typed as odrl:LeftOperand, odrl:Operator or odrl:Right." ;
     ] .
+
+# Needs profile
+
+:RefinementNeedsSourceShape a sh:NodeShape ;
+    sh:targetSubjectsOf odrl:refinement ;
+    sh:or (
+        [ sh:property [ sh:path odrl:source ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path rdf:value ; sh:minCount 1 ] ]
+    ) ;
+    sh:message "A collection with refinement must have one source." .
+
+:ActionRequiresProfileShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy, odrl:Set, odrl:Offer, odrl:Agreement ;
+    sh:or (
+        [ sh:property [ sh:path odrl:profile ; sh:minCount 1 ] ]
+        [ sh:property [
+            sh:path ( [ sh:alternativePath ( odrl:permission odrl:prohibition odrl:obligation ) ] odrl:action ) ;
+            sh:or (
+                [ sh:node :AllowedActionValueShape ]
+                [ sh:nodeKind sh:Literal ]
+            ) ;
+        ] ]
+    ) ;
+    sh:message "An action outside the ODRL vocabulary requires a declared odrl:profile." .
+
+:ConstraintVocabRequiresProfileShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy, odrl:Set, odrl:Offer, odrl:Agreement ;
+    sh:or (
+        [ sh:property [ sh:path odrl:profile ; sh:minCount 1 ] ]
+        [ sh:property [
+            sh:path ( [ sh:alternativePath ( odrl:permission odrl:prohibition odrl:obligation ) ] odrl:constraint ) ;
+            sh:node :AllowedConstraintValueShape ;
+        ] ]
+    ) ;
+    sh:message "A constraint term (leftOperand/operator) outside the ODRL vocabulary requires a declared odrl:profile." .
+
 
 # Permission = must have one target
 
@@ -114,7 +195,15 @@
 
     sh:property [
         sh:path odrl:remedy ;
-        sh:node :DutyShape ;
+        sh:node [
+            sh:node :DutyShape ;
+
+            sh:property [
+                sh:path odrl:consequence ;
+                sh:maxCount 0 ;
+                sh:message "A remedy must not have a consequence." ;
+            ]
+        ] ;
         sh:message "Each Prohibition remedy must conform to ODRL duty." ;
     ] .
 

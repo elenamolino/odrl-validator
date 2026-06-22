@@ -2,26 +2,7 @@
 # Shape for Party
 #################################################
 
-:PartyTypeShape a sh:NodeShape ;
-    sh:severity sh:Warning ;
-    sh:or (
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:Party ;
-            ]
-        ]
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:PartyCollection ;
-            ]
-        ]
-    ) ;
-    sh:message "The party should be typed as odrl:Party or odrl:PartyCollection." .
-
 :PartyShape a sh:NodeShape ;
-    sh:node :PartyTypeShape ;
 
     sh:property [
         sh:path odrl:uid ;
@@ -36,8 +17,8 @@
         sh:message "partOf should point to an PartyCollection." ;
     ] .
 
+
 :PartyCollectionShape a sh:NodeShape ;
-    sh:node :PartyShape ;
 
     sh:property [
         sh:path odrl:source ;

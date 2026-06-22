@@ -15,14 +15,20 @@
     sh:property [
         sh:path odrl:datatype ;
         sh:maxCount 1 ;
+        sh:nodeKind rdfs:Datatype;
         sh:message "A Constraint may have one dataType." ;
     ] ;
 
     sh:property [
         sh:path odrl:unit ;
         sh:maxCount 1 ;
+        sh:message "A Constraint may have at most one unit." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:unit ;
         sh:nodeKind sh:IRI ;
-        sh:message "A Constraint may have one unit, and it must be an IRI." ;
+        sh:message "A Constraint unit should be an IRI." ;
     ] ;
 
     sh:property [
@@ -37,50 +43,6 @@
         sh:maxCount 1 ;
         sh:message "A Constraint must have one odrl:leftOperand." ;
     ] ;
-    sh:property [
-        sh:severity sh:Warning ;
-        sh:path odrl:leftOperand ;
-        sh:or ([
-            sh:in (
-                odrl:absolutePosition
-                odrl:absoluteSpatialPosition
-                odrl:absoluteTemporalPosition
-                odrl:absoluteSize
-                odrl:count
-                odrl:dateTime
-                odrl:delayPeriod
-                odrl:deliveryChannel
-                odrl:elapsedTime
-                odrl:event
-                odrl:fileFormat
-                odrl:industry
-                odrl:language
-                odrl:media
-                odrl:meteredTime
-                odrl:payAmount
-                odrl:percentage
-                odrl:product
-                odrl:purpose
-                odrl:recipient
-                odrl:relativePosition
-                odrl:relativeSpatialPosition
-                odrl:relativeTemporalPosition
-                odrl:relativeSize
-                odrl:resolution
-                odrl:spatial
-                odrl:spatialCoordinates
-                odrl:systemDevice
-                odrl:timeInterval
-                odrl:unitOfCount
-                odrl:version
-                odrl:virtualLocation
-            ) ]
-            [ 
-                sh:class odrl:LeftOperand;
-            ]
-        ) ;
-        sh:message "The constraint leftOperand should be part of the ODRL vocabulary or typed as odrl:LeftOperand." ;
-    ] ;
 
     sh:property [
         sh:path odrl:operator ;
@@ -88,51 +50,43 @@
         sh:maxCount 1 ;
         sh:message "A Constraint must have one odrl:operator." ;
     ] ;
+    
+    sh:xone (
+        [ 
+            sh:property [ 
+                sh:path odrl:rightOperand ; 
+                sh:minCount 1 ;
+                sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference (neither both nor none)." ;
+        ] ]
+        [ 
+            sh:property [
+                sh:path odrl:rightOperandReference ; 
+                sh:minCount 1 ;
+                sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference (neither both nor none)." ;
+        ] ]
+    ) ;
+
     sh:property [
-        sh:severity sh:Warning ;
-        sh:path odrl:operator ;
-        sh:in (
-            odrl:eq
-            odrl:gt
-            odrl:gteq
-            odrl:lt
-            odrl:lteq
-            odrl:neq
-            odrl:isA
-            odrl:hasPart
-            odrl:isPartOf
-            odrl:isAllOf
-            odrl:isAnyOf
-            odrl:isNoneOf
+        sh:path odrl:rightOperand ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:nodeKind sh:Literal ]
+            [ sh:nodeKind sh:IRI ]
+            [ sh:class odrl:RightOperand ]
+            [ sh:node :RightOperandListShape ]
         ) ;
-        sh:message "The operator should be a standard ODRL operators." ;
+        sh:message "A Constraint must declare exactly one odrl:rightOperand, given as a literal, an IRI, an odrl:RightOperand instance, or a list of these." ;
     ] ;
 
-    sh:xone ([ 
-        sh:property [
-            sh:path odrl:rightOperand ;
-            sh:minCount 1 ;
-            sh:maxCount 1 ;
-            sh:or (
-                [ sh:nodeKind sh:Literal ]
-                [ sh:nodeKind sh:IRI ]
-                [ sh:class odrl:RightOperand ]
-                [ sh:node :RightOperandListShape ]
-            ) ;
-            sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference." ; 
-        ] 
-    ][
-        sh:property [
-            sh:path odrl:rightOperandReference;
-            sh:minCount 1 ;
-            sh:maxCount 1 ;    
-            sh:or (
-                [ sh:nodeKind sh:IRI ]
-                [ sh:node :RightOperandReferenceListShape ]
-            ) ;    
-            sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference." ; 
-        ] 
-    ]) .
+    sh:property [
+        sh:path odrl:rightOperandReference ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:nodeKind sh:IRI ]
+            [ sh:node :RightOperandReferenceListShape ]
+        ) ;
+        sh:message "A Constraint must declare exactly one odrl:rightOperandReference, given as an IRI or a list of IRIs." ;
+    ] .
 
 :RightOperandListShape a sh:NodeShape ;
     sh:node :RdfListShape ;
@@ -154,13 +108,23 @@
         sh:message "Each value in rightOperandReference must be an IRI." ;
     ] .
 
+# Validate constraints without typed
+
+:AnyConstraintShape a sh:NodeShape ;
+    sh:targetSubjectsOf odrl:leftOperand ;
+    sh:node :ConstraintShape .
+
 #################################################
 # Logical Constraint = must have one operand
 #################################################
 
 :LogicalConstraintShape a sh:NodeShape ;
     sh:targetClass odrl:LogicalConstraint ;
-
+    sh:targetSubjectsOf odrl:or ;
+    sh:targetSubjectsOf odrl:xone ;
+    sh:targetSubjectsOf odrl:and ;
+    sh:targetSubjectsOf odrl:andSequence ;
+    
     sh:property [
         sh:path odrl:uid ;
         sh:maxCount 1 ;
@@ -223,4 +187,80 @@
             ]
         ]
     ) .
+    
+#################################################
+# Shape for odrl vocabulary
+#################################################
+
+:AllowedConstraintValueShape a sh:NodeShape ;
+    sh:targetClass odrl:Constraint ; 
+
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:leftOperand ;
+        sh:or ([
+            sh:in (
+                odrl:absolutePosition
+                odrl:absoluteSpatialPosition
+                odrl:absoluteTemporalPosition
+                odrl:absoluteSize
+                odrl:count
+                odrl:dateTime
+                odrl:delayPeriod
+                odrl:deliveryChannel
+                odrl:elapsedTime
+                odrl:event
+                odrl:fileFormat
+                odrl:industry
+                odrl:language
+                odrl:media
+                odrl:meteredTime
+                odrl:payAmount
+                odrl:percentage
+                odrl:product
+                odrl:purpose
+                odrl:recipient
+                odrl:relativePosition
+                odrl:relativeSpatialPosition
+                odrl:relativeTemporalPosition
+                odrl:relativeSize
+                odrl:resolution
+                odrl:spatial
+                odrl:spatialCoordinates
+                odrl:systemDevice
+                odrl:timeInterval
+                odrl:unitOfCount
+                odrl:version
+                odrl:virtualLocation
+            ) ]
+            [ 
+                sh:class odrl:LeftOperand;
+            ]) ;
+        sh:message "The constraint leftOperand should be part of the ODRL vocabulary or typed as odrl:LeftOperand." ;
+    ] ;
+    
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:operator ;
+        sh:or ([
+            sh:in (
+                odrl:eq
+                odrl:gt
+                odrl:gteq
+                odrl:lt
+                odrl:lteq
+                odrl:neq
+                odrl:isA
+                odrl:hasPart
+                odrl:isPartOf
+                odrl:isAllOf
+                odrl:isAnyOf
+                odrl:isNoneOf
+            ) ]
+            [ 
+                sh:class odrl:Operator;
+            ]) ;
+        sh:message "The operator should be a standard ODRL operators." ;
+    ] .
+
     

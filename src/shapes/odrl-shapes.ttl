@@ -3,6 +3,7 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix cc: <http://creativecommons.org/ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -53,17 +54,32 @@
     sh:property [
         sh:path odrl:inheritFrom ;
         sh:nodeKind sh:IRI ;
-        sh:message "InheritFrom must be an IRI." ;
+        sh:class odrl:Policy ;
+        sh:message "inheritFrom must reference an existing odrl:Policy." ;
     ] ;
 
     sh:property [
         sh:path odrl:conflict ;
         sh:nodeKind sh:IRI ;
-        sh:in ( odrl:perm odrl:prohibit odrl:invalid ) ;
         sh:maxCount 1 ;
         sh:message "Conflict strategy must appear at most once and be a ConflictTerm: odrl:perm, odrl:prohibit, or odrl:invalid." ;
     ] .
 
+:ConflictStrategyShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy, odrl:Set, odrl:Offer, odrl:Agreement ;
+    sh:message "An unknown odrl:conflict strategy requires a declared odrl:profile." ;
+    sh:or (
+        [ sh:property [ 
+            sh:path odrl:conflict ; 
+            sh:in ( odrl:perm odrl:prohibit odrl:invalid ) 
+            ] 
+        ]
+        [ sh:property [ 
+            sh:path odrl:profile ; 
+            sh:minCount 1 
+            ] 
+        ]
+    ) .
 
 # Set = Policy
 
@@ -137,13 +153,25 @@
         sh:message "A Rule must have one action." ;
     ] ;
     sh:property [
-        sh:severity sh:Warning ;
         sh:path odrl:action ;
         sh:or (
+            [ sh:nodeKind sh:IRI ]
             [ sh:node :ActionShape ]
             [ sh:node :ActionWithRefinementShape ]
         );
         sh:message "Action should be a supported action or a blank node with rdf:value and odrl:refinement." ;    
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:action ;
+        sh:node :AllowedActionValueShape ;
+        sh:message "Action is neither part of the ODRL Vocabulary nor typed as odrl:Action." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path (odrl:action rdf:value) ;
+        sh:node :AllowedActionValueShape ;
+        sh:message "Action is neither part of the ODRL Vocabulary nor typed as odrl:Action." ;
     ] ;
 
     sh:property [
@@ -152,23 +180,42 @@
         sh:message "A Rule may have one target." ;
     ] ;
     sh:property [
+        sh:path odrl:target ;
+        sh:or (
+            [ sh:nodeKind sh:IRI ]
+            [ sh:node :AssetShape ]
+            [ sh:node :AssetCollectionShape ]
+        );
+        sh:message "Target should be a supported asset or a blank node with rdf:value." ;    
+    ] ;
+    sh:property [
         sh:severity sh:Warning ;
         sh:path odrl:target ;
-        sh:node :AssetShape ;
+        sh:or (
+            [ sh:class odrl:Asset ]
+            [ sh:class odrl:AssetCollection ]
+        ) ;
         sh:message "Target should be a Asset or AssetCollection." ;
     ] ;
 
     sh:property [
+    sh:path odrl:assignee ;
+    sh:maxCount 1 ;
+    sh:message "A Rule may have at most one assignee." ;
+    ] ;
+    sh:property [
         sh:path odrl:assignee ;
-        sh:maxCount 1 ;
-        sh:message "A Rule may have at most one assignee." ;
+        sh:or (
+            [ sh:node :PartyShape ]
+            [ sh:node :PartyCollectionShape ]
+        );
     ] ;
     sh:property [
         sh:severity sh:Warning ;
         sh:path odrl:assignee ;
         sh:or (
-            [ sh:node :PartyShape ]
-            [ sh:node :PartyCollectionShape ]
+            [ sh:class odrl:Party ]
+            [ sh:class odrl:PartyCollection ]
         ) ;
         sh:message "The assignee should be a Party or PartyCollection." ;
     ] ;
@@ -179,11 +226,19 @@
         sh:message "A Rule may have at most one assigner." ;
     ] ;
     sh:property [
-        sh:severity sh:Warning ;
         sh:path odrl:assigner ;
         sh:or (
             [ sh:node :PartyShape ]
             [ sh:node :PartyCollectionShape ]
+        );        
+        sh:message "Assigner should be a supported party or a blank node with rdf:value." ;    
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:assigner ;
+        sh:or (
+            [ sh:class odrl:Party ]
+            [ sh:class odrl:PartyCollection ]
         ) ;
         sh:message "The assigner should be a Party or PartyCollection." ;
     ] ;
@@ -195,7 +250,49 @@
             [ sh:node :LogicalConstraintShape ]
         ) ;
         sh:message "Each constraint must conform to ODRL constraint or ODRL logical constraint." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:constraint ;
+        sh:node :AllowedConstraintValueShape ;
+        sh:message "Constraint elements are neither part of the ODRL Vocabulary nor typed as odrl:LeftOperand, odrl:Operator or odrl:Right." ;
     ] .
+
+# Needs profile
+
+:RefinementNeedsSourceShape a sh:NodeShape ;
+    sh:targetSubjectsOf odrl:refinement ;
+    sh:or (
+        [ sh:property [ sh:path odrl:source ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path rdf:value ; sh:minCount 1 ] ]
+    ) ;
+    sh:message "A collection with refinement must have one source." .
+
+:ActionRequiresProfileShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy, odrl:Set, odrl:Offer, odrl:Agreement ;
+    sh:or (
+        [ sh:property [ sh:path odrl:profile ; sh:minCount 1 ] ]
+        [ sh:property [
+            sh:path ( [ sh:alternativePath ( odrl:permission odrl:prohibition odrl:obligation ) ] odrl:action ) ;
+            sh:or (
+                [ sh:node :AllowedActionValueShape ]
+                [ sh:nodeKind sh:Literal ]
+            ) ;
+        ] ]
+    ) ;
+    sh:message "An action outside the ODRL vocabulary requires a declared odrl:profile." .
+
+:ConstraintVocabRequiresProfileShape a sh:NodeShape ;
+    sh:targetClass odrl:Policy, odrl:Set, odrl:Offer, odrl:Agreement ;
+    sh:or (
+        [ sh:property [ sh:path odrl:profile ; sh:minCount 1 ] ]
+        [ sh:property [
+            sh:path ( [ sh:alternativePath ( odrl:permission odrl:prohibition odrl:obligation ) ] odrl:constraint ) ;
+            sh:node :AllowedConstraintValueShape ;
+        ] ]
+    ) ;
+    sh:message "A constraint term (leftOperand/operator) outside the ODRL vocabulary requires a declared odrl:profile." .
+
 
 # Permission = must have one target
 
@@ -231,7 +328,15 @@
 
     sh:property [
         sh:path odrl:remedy ;
-        sh:node :DutyShape ;
+        sh:node [
+            sh:node :DutyShape ;
+
+            sh:property [
+                sh:path odrl:consequence ;
+                sh:maxCount 0 ;
+                sh:message "A remedy must not have a consequence." ;
+            ]
+        ] ;
         sh:message "Each Prohibition remedy must conform to ODRL duty." ;
     ] .
 
@@ -317,14 +422,20 @@
     sh:property [
         sh:path odrl:datatype ;
         sh:maxCount 1 ;
+        sh:nodeKind rdfs:Datatype;
         sh:message "A Constraint may have one dataType." ;
     ] ;
 
     sh:property [
         sh:path odrl:unit ;
         sh:maxCount 1 ;
+        sh:message "A Constraint may have at most one unit." ;
+    ] ;
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:unit ;
         sh:nodeKind sh:IRI ;
-        sh:message "A Constraint may have one unit, and it must be an IRI." ;
+        sh:message "A Constraint unit should be an IRI." ;
     ] ;
 
     sh:property [
@@ -339,50 +450,6 @@
         sh:maxCount 1 ;
         sh:message "A Constraint must have one odrl:leftOperand." ;
     ] ;
-    sh:property [
-        sh:severity sh:Warning ;
-        sh:path odrl:leftOperand ;
-        sh:or ([
-            sh:in (
-                odrl:absolutePosition
-                odrl:absoluteSpatialPosition
-                odrl:absoluteTemporalPosition
-                odrl:absoluteSize
-                odrl:count
-                odrl:dateTime
-                odrl:delayPeriod
-                odrl:deliveryChannel
-                odrl:elapsedTime
-                odrl:event
-                odrl:fileFormat
-                odrl:industry
-                odrl:language
-                odrl:media
-                odrl:meteredTime
-                odrl:payAmount
-                odrl:percentage
-                odrl:product
-                odrl:purpose
-                odrl:recipient
-                odrl:relativePosition
-                odrl:relativeSpatialPosition
-                odrl:relativeTemporalPosition
-                odrl:relativeSize
-                odrl:resolution
-                odrl:spatial
-                odrl:spatialCoordinates
-                odrl:systemDevice
-                odrl:timeInterval
-                odrl:unitOfCount
-                odrl:version
-                odrl:virtualLocation
-            ) ]
-            [ 
-                sh:class odrl:LeftOperand;
-            ]
-        ) ;
-        sh:message "The constraint leftOperand should be part of the ODRL vocabulary or typed as odrl:LeftOperand." ;
-    ] ;
 
     sh:property [
         sh:path odrl:operator ;
@@ -390,51 +457,43 @@
         sh:maxCount 1 ;
         sh:message "A Constraint must have one odrl:operator." ;
     ] ;
+    
+    sh:xone (
+        [ 
+            sh:property [ 
+                sh:path odrl:rightOperand ; 
+                sh:minCount 1 ;
+                sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference (neither both nor none)." ;
+        ] ]
+        [ 
+            sh:property [
+                sh:path odrl:rightOperandReference ; 
+                sh:minCount 1 ;
+                sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference (neither both nor none)." ;
+        ] ]
+    ) ;
+
     sh:property [
-        sh:severity sh:Warning ;
-        sh:path odrl:operator ;
-        sh:in (
-            odrl:eq
-            odrl:gt
-            odrl:gteq
-            odrl:lt
-            odrl:lteq
-            odrl:neq
-            odrl:isA
-            odrl:hasPart
-            odrl:isPartOf
-            odrl:isAllOf
-            odrl:isAnyOf
-            odrl:isNoneOf
+        sh:path odrl:rightOperand ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:nodeKind sh:Literal ]
+            [ sh:nodeKind sh:IRI ]
+            [ sh:class odrl:RightOperand ]
+            [ sh:node :RightOperandListShape ]
         ) ;
-        sh:message "The operator should be a standard ODRL operators." ;
+        sh:message "A Constraint must declare exactly one odrl:rightOperand, given as a literal, an IRI, an odrl:RightOperand instance, or a list of these." ;
     ] ;
 
-    sh:xone ([ 
-        sh:property [
-            sh:path odrl:rightOperand ;
-            sh:minCount 1 ;
-            sh:maxCount 1 ;
-            sh:or (
-                [ sh:nodeKind sh:Literal ]
-                [ sh:nodeKind sh:IRI ]
-                [ sh:class odrl:RightOperand ]
-                [ sh:node :RightOperandListShape ]
-            ) ;
-            sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference." ; 
-        ] 
-    ][
-        sh:property [
-            sh:path odrl:rightOperandReference;
-            sh:minCount 1 ;
-            sh:maxCount 1 ;    
-            sh:or (
-                [ sh:nodeKind sh:IRI ]
-                [ sh:node :RightOperandReferenceListShape ]
-            ) ;    
-            sh:message "A Constraint must have one of odrl:rightOperand or odrl:rightOperandReference." ; 
-        ] 
-    ]) .
+    sh:property [
+        sh:path odrl:rightOperandReference ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:nodeKind sh:IRI ]
+            [ sh:node :RightOperandReferenceListShape ]
+        ) ;
+        sh:message "A Constraint must declare exactly one odrl:rightOperandReference, given as an IRI or a list of IRIs." ;
+    ] .
 
 :RightOperandListShape a sh:NodeShape ;
     sh:node :RdfListShape ;
@@ -456,13 +515,23 @@
         sh:message "Each value in rightOperandReference must be an IRI." ;
     ] .
 
+# Validate constraints without typed
+
+:AnyConstraintShape a sh:NodeShape ;
+    sh:targetSubjectsOf odrl:leftOperand ;
+    sh:node :ConstraintShape .
+
 #################################################
 # Logical Constraint = must have one operand
 #################################################
 
 :LogicalConstraintShape a sh:NodeShape ;
     sh:targetClass odrl:LogicalConstraint ;
-
+    sh:targetSubjectsOf odrl:or ;
+    sh:targetSubjectsOf odrl:xone ;
+    sh:targetSubjectsOf odrl:and ;
+    sh:targetSubjectsOf odrl:andSequence ;
+    
     sh:property [
         sh:path odrl:uid ;
         sh:maxCount 1 ;
@@ -525,32 +594,88 @@
             ]
         ]
     ) .
+    
+#################################################
+# Shape for odrl vocabulary
+#################################################
+
+:AllowedConstraintValueShape a sh:NodeShape ;
+    sh:targetClass odrl:Constraint ; 
+
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:leftOperand ;
+        sh:or ([
+            sh:in (
+                odrl:absolutePosition
+                odrl:absoluteSpatialPosition
+                odrl:absoluteTemporalPosition
+                odrl:absoluteSize
+                odrl:count
+                odrl:dateTime
+                odrl:delayPeriod
+                odrl:deliveryChannel
+                odrl:elapsedTime
+                odrl:event
+                odrl:fileFormat
+                odrl:industry
+                odrl:language
+                odrl:media
+                odrl:meteredTime
+                odrl:payAmount
+                odrl:percentage
+                odrl:product
+                odrl:purpose
+                odrl:recipient
+                odrl:relativePosition
+                odrl:relativeSpatialPosition
+                odrl:relativeTemporalPosition
+                odrl:relativeSize
+                odrl:resolution
+                odrl:spatial
+                odrl:spatialCoordinates
+                odrl:systemDevice
+                odrl:timeInterval
+                odrl:unitOfCount
+                odrl:version
+                odrl:virtualLocation
+            ) ]
+            [ 
+                sh:class odrl:LeftOperand;
+            ]) ;
+        sh:message "The constraint leftOperand should be part of the ODRL vocabulary or typed as odrl:LeftOperand." ;
+    ] ;
+    
+    sh:property [
+        sh:severity sh:Warning ;
+        sh:path odrl:operator ;
+        sh:or ([
+            sh:in (
+                odrl:eq
+                odrl:gt
+                odrl:gteq
+                odrl:lt
+                odrl:lteq
+                odrl:neq
+                odrl:isA
+                odrl:hasPart
+                odrl:isPartOf
+                odrl:isAllOf
+                odrl:isAnyOf
+                odrl:isNoneOf
+            ) ]
+            [ 
+                sh:class odrl:Operator;
+            ]) ;
+        sh:message "The operator should be a standard ODRL operators." ;
+    ] .
 
 
 #################################################
 # Shape for Party
 #################################################
 
-:PartyTypeShape a sh:NodeShape ;
-    sh:severity sh:Warning ;
-    sh:or (
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:Party ;
-            ]
-        ]
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:PartyCollection ;
-            ]
-        ]
-    ) ;
-    sh:message "The party should be typed as odrl:Party or odrl:PartyCollection." .
-
 :PartyShape a sh:NodeShape ;
-    sh:node :PartyTypeShape ;
 
     sh:property [
         sh:path odrl:uid ;
@@ -565,8 +690,8 @@
         sh:message "partOf should point to an PartyCollection." ;
     ] .
 
+
 :PartyCollectionShape a sh:NodeShape ;
-    sh:node :PartyShape ;
 
     sh:property [
         sh:path odrl:source ;
@@ -590,7 +715,6 @@
 #################################################
 
 :ActionShape a sh:NodeShape ;
-    sh:node :AllowedActionValueShape ;
 
     sh:property [
         sh:path odrl:includedIn ;
@@ -603,6 +727,25 @@
         sh:path odrl:implies ;
         sh:node :AllowedActionValueShape ;
         sh:message "Each implies value should be an Action." ;
+    ] .
+
+:ActionWithRefinementShape a sh:NodeShape ;
+
+    sh:property [
+        sh:path rdf:value ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "An action refinement must have one rdf:value." ;
+    ] ;
+
+    sh:property [
+        sh:path odrl:refinement ;
+        sh:minCount 1 ;
+        sh:or (
+            [ sh:node :ConstraintShape ]
+            [ sh:node :LogicalConstraintShape ]
+        ) ;
+        sh:message "An action with refinement must have a valid refinement." ;
     ] .
 
 :AllowedActionValueShape a sh:NodeShape ;
@@ -660,64 +803,39 @@
             cc:ShareAlike
             cc:Sharing
             cc:SourceCode
+            # Deprecated ODRL terms
+            odrl:append
+            odrl:appendTo
+            odrl:copy
+            odrl:export
+            odrl:lease
+            odrl:license
+            odrl:lend
+            odrl:pay
+            odrl:preview
+            odrl:secondaryUse
+            odrl:share
+            odrl:write
+            odrl:writeTo
+            odrl:adHocShare
+            odrl:extractChar
+            odrl:extractPage
+            odrl:extractWord
+            odrl:timedCount
             ) 
     ][ 
         sh:class odrl:Action 
+    ][ 
+        sh:nodeKind sh:BlankNode 
     ]) ;
     sh:message "Action is neither part of the ODRL Vocabulary nor typed as odrl:Action." .
-
-
-:ActionWithRefinementShape a sh:NodeShape ;
-
-    sh:property [
-        sh:path rdf:value ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:message "An action refinement must have one rdf:value." ;
-    ] ;
-
-    sh:property [
-        sh:severity sh:Warning ;
-        sh:path rdf:value ;
-        sh:node :AllowedActionValueShape ;
-        sh:message "The action value should be part of the ODRL vocabulary or typed as odrl:Action." ;
-    ] ;
-
-    sh:property [
-        sh:path odrl:refinement ;
-        sh:minCount 1 ;
-        sh:or (
-            [ sh:node :ConstraintShape ]
-            [ sh:node :LogicalConstraintShape ]
-        ) ;
-        sh:message "An action with refinement must have a valid refinement." ;
-    ] .
 
 
 #################################################
 # Shape for Asset
 #################################################
 
-:AssetTypeShape a sh:NodeShape ;
-    sh:severity sh:Warning ;
-    sh:or (
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:Asset ;
-            ]
-        ]
-        [
-            sh:property [
-                sh:path rdf:type ;
-                sh:hasValue odrl:AssetCollection ;
-            ]
-        ]
-    ) ;
-    sh:message "The asset should be typed as odrl:Asset or odrl:AssetCollection." .
-
 :AssetShape a sh:NodeShape ;
-    sh:node :AssetTypeShape ;
 
     sh:property [
         sh:path odrl:uid ;
@@ -739,7 +857,6 @@
     ] .
 
 :AssetCollectionShape a sh:NodeShape ;
-    sh:node :AssetShape ;
     
     sh:property [
         sh:path odrl:source ;
