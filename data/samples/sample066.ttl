@@ -12,10 +12,11 @@
     odrl:permission [
         odrl:assigner <http://example.com/user44> ;
         odrl:target <http://example.com/myPhotos:BdayParty> ;
+        odrl:action odrl:display ;
         odrl:assignee [
             a odrl:PartyCollection ;
-            odrl:action odrl:display ;
             odrl:refinement [
+                a odrl:Constraint ;
                 odrl:leftOperand foaf:age ;
                 odrl:operator odrl:gt ;
                 odrl:rightOperand 17 ;

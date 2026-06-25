@@ -14,7 +14,7 @@
         odrl:assigner <http://example.com/org/paisley-park> ;
         odrl:action odrl:play ;
         odrl:constraint [
-            p1:unknown <http://example.com/p:88/C1> ;
+            p1:unknown ( <http://example.com/p:88/C1> ) ;
         ]    
    ] .
 

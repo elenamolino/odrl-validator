@@ -9,10 +9,10 @@
     odrl:profile <http://example.com/odrl:profile:11> ;
     odrl:permission [
         odrl:assigner <http://example.com/org88> ;
+        odrl:action odrl:play ;
         odrl:target [
             a odrl:AssetCollection ;
             odrl:source <http://example.com/media-catalogue> ;
-            odrl:action odrl:play ;
             odrl:refinement [
                 odrl:leftOperand odrl:runningTime ;
                 odrl:operator odrl:lt ; 

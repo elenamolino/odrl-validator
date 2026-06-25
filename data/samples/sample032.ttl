@@ -2,7 +2,7 @@
 @prefix dct: <http://purl.org/dc/terms/> .
 
 #valid. (asset specified externally)
-<http://odrlapi.appspot.com/samples/sample031>
+<http://odrlapi.appspot.com/samples/sample032>
     a odrl:Set ;   
     dct:source "victor" ;
     odrl:permission [
@@ -11,5 +11,5 @@
     ] .
 
 <http://odrlapi.appspot.com/samples/asset031>
-     odrl:hasPolicy <http://odrlapi.appspot.com/samples/sample031>.
+     odrl:hasPolicy <http://odrlapi.appspot.com/samples/sample032>.
 

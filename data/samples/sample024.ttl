@@ -11,10 +11,10 @@
         odrl:target <http://example.com/book/1999> ;
         odrl:assigner <http://example.com/org/paisley-park> ;
         odrl:action [
-            rdf:value odrl:reproduce;
+            rdf:value odrl:reproduce ;
             odrl:refinement [
-                odrl:xone <http://odrlapi.appspot.com/samples/cons88C1>, <http://odrlapi.appspot.com/samples/cons88C2> 
-                ]
+                odrl:xone ( <http://odrlapi.appspot.com/samples/cons88C1> <http://odrlapi.appspot.com/samples/cons88C2> )
+            ]
         ]
     ] .
 

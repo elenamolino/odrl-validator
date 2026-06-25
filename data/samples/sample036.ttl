@@ -9,9 +9,7 @@
 
 <http://odrlapi.appspot.com/samples/proh000>
     a odrl:Prohibition ;
-    odrl:prohibition [
-        odrl:target <http://example.com/asset:9519> ;
-        odrl:action odrl:reproduce ;
-        odrl:remedy <http://odrlapi.appspot.com/samples/proh000> 
-    ] .
+    odrl:target <http://example.com/asset:9519> ;
+    odrl:action odrl:reproduce ;
+    odrl:remedy <http://odrlapi.appspot.com/samples/proh000>  .
 

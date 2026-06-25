@@ -16,5 +16,6 @@
     odrl:inheritFrom <http://odrlapi.appspot.com/samples/sample047> ;
     odrl:permission [
         odrl:assigner <http://example.com/asset:555> ;
+        odrl:target <http://example.com/asset:terms-and-conditions> ;
         odrl:action odrl:display
     ] .
