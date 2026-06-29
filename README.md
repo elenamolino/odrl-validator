@@ -1,4 +1,5 @@
 # ODRL Validator
+[![npm](https://img.shields.io/npm/v/odrl-validator)](https://www.npmjs.com/package/odrl-validator)
 
 The ODRL Validator is a Typescript tool to aid development of consistent [ODRL](https://www.w3.org/TR/odrl-model/) policies.
 This means the tool can validate whether the policies are syntactically (the correct syntax using the ODRL Vocabulary) and semantically (the terms are used in the correct place according to the model) correct.
