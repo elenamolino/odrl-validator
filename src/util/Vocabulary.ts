@@ -4,6 +4,7 @@ import { createVocabulary } from 'rdf-vocabulary';
 export const DETECTION = createVocabulary('https://w3id.org/force/detection#',
     'Conflict',
     'DeonticConflict',
+    'ConstraintConflict',
     'rules',
     'reason'
 )

@@ -2,6 +2,7 @@ export const RULES: string = `@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 @prefix log:  <http://www.w3.org/2000/10/swap/log#> .
 @prefix detection: <https://w3id.org/force/detection#> .
 
+# deontic conflict: a prohibition and duty 
 {
     ?prohibition a odrl:Prohibition ;
         odrl:target   ?target ;
@@ -24,6 +25,7 @@ export const RULES: string = `@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
         detection:reason "This duty can never be fulfilled because the same assignee is prohibited from performing the same action on the same target." .
 }.
 
+# deontic conflict: a permission and a prohibition 
 {
     ?permission a odrl:Permission ;
        odrl:assignee ?party ;
@@ -43,4 +45,26 @@ export const RULES: string = `@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
     ?conflict a detection:Conflict, detection:DeonticConflict ;
         detection:rules ?prohibition , ?permission ;
         detection:reason "The permission and prohibition have the same assignee, target and action" .
+}.
+
+# Constraints conflict detection
+{
+    ?rule odrl:constraint ?constraint1, ?constraint2 .
+    ?constraint1 a odrl:Constraint ;
+        odrl:leftOperand ?lo;
+        odrl:operator odrl:eq ;
+        odrl:rightOperand ?ro1 .
+
+    ?constraint2 a odrl:Constraint ;
+        odrl:leftOperand ?lo;
+        odrl:operator odrl:eq ;
+        odrl:rightOperand ?ro2 .    
+
+    ?ro1 log:notEqualTo ?ro2 .
+    (?rule) log:skolem ?conflict .
+
+} => {
+    ?conflict a detection:Conflict, detection:ConstraintConflict ;
+        detection:rules ?constraint2 , ?constraint1 ; #TODO: fix later, should not be rules but rather constraints
+        detection:reason "A rule with constraints with the same left operand and the equals operator can never be satisfied if the right operands differ" .
 }.`;

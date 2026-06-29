@@ -1,19 +1,10 @@
 import 'jest-rdf';
 import { DataFactory, Store } from 'n3';
-import { createVocabulary } from "rdf-vocabulary";
 import { internalization } from '../../src/Normalisation';
 import { ODRL, RDF } from 'odrl-atomization';
+import { TEST } from '../util/Util';
 
-export const TEST = createVocabulary(
-    'http://example.org/',
-    'policy1',
-    'permission1',
-    'prohibition1',
-    'duty1',
-    'asset',
-    'party1',
-    'party2'
-);
+
 
 const { quad } = DataFactory;
 
