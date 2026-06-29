@@ -20,7 +20,13 @@ export class Normalizer implements INormalizer {
         const internalizedPolicies = internalization(quads);
         // N4. Interiorizing policy-level properties (dealing with compact policies)
         // N5. Expansion from compound to irreducible rules (dealing with composite rules)
-        const atomizedODRLPolicies = await new Atomizer().atomize(internalizedPolicies)
+        let atomizedODRLPolicies: Quad[];
+        try {
+            atomizedODRLPolicies = await new Atomizer().atomize(internalizedPolicies)
+        } catch (error) {
+            console.error("Error atomizing policies:", error);
+            atomizedODRLPolicies = internalizedPolicies
+        }
         return atomizedODRLPolicies
     }
 
@@ -50,13 +56,6 @@ export function internalization(quads: Quad[]) {
 
     return store.getQuads(null, null, null, null);
 }
-// TODO: 
-// 1. go to meeting notes and write why we need normalization
-// 2. describe our algorithm (if it differs from the wiki, elaborate)
-// 3. create some tests based on the current failing tests -> see meeting notes or mattermost
-// 4. implement
-
-
 // The correct order for the transformations would be N1, N2, N3, N10, N4, N6, N7, N8, N9, N5. Pending to be renamed after after no references are found. 
 
 // things we won't do right now

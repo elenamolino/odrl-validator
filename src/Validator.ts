@@ -4,13 +4,14 @@ import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
 import { Validator } from "shacl-engine"
 import { EyelingReasoner } from 'n3-utility'
-import { Atomizer, RDF } from "odrl-atomization";
+import { RDF } from "odrl-atomization";
 import { RULES } from "./rules/Rules";
 import { SHAPES } from "./shapes/Shapes";
 import { DETECTION } from "./util/Vocabulary";
+import { Normalizer } from "./Normalisation";
 
 export class ODRLValidator implements IODRLValidator {
-    private atomizer: Atomizer;
+    private normalizer: Normalizer;
 
     protected shaclStore: Store;
     private shaclValidator: Validator;
@@ -25,7 +26,7 @@ export class ODRLValidator implements IODRLValidator {
             shape = config.shape ?? shape;
             n3Rules = config.n3Rules ?? n3Rules;
         }
-        this.atomizer = new Atomizer();
+        this.normalizer = new Normalizer();
         this.shaclStore = new Store(shape);
 
         this.shaclValidator = new Validator(this.shaclStore, { factory: new DataFactory() });
@@ -49,16 +50,10 @@ export class ODRLValidator implements IODRLValidator {
         }
 
         // Normalization of the policies
-        let atomizedPolicies: Quad[];
-        try {
-            atomizedPolicies = await this.atomizer.atomize(policies);
-        } catch (error) {
-            console.error("Error atomizing policies:", error);
-            atomizedPolicies = policies;
-        }
+        let normalizedPolicies = await this.normalizer.normalise(policies)
 
         // SHACL Validation
-        const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
+        const report = await this.shaclValidator.validate({ dataset: new Store(normalizedPolicies) })
         if (report.conforms === false) {
 
             const getResults = (result: any): any[] => {
@@ -105,7 +100,7 @@ export class ODRLValidator implements IODRLValidator {
         }
 
         // Notation3 Conflict Detection
-        const conflictReasoningResult = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
+        const conflictReasoningResult = await new EyelingReasoner().reason(new Store(normalizedPolicies), this.n3Rules);
 
         const conflicts = conflictReasoningResult.getQuads(null, RDF.type, DETECTION.Conflict, null);
         for (const conflict of conflicts) {
