@@ -4,13 +4,21 @@ import { IODRLValidator, ValidatorResult } from "./Types";
 import { DataFactory } from 'rdf-data-factory';
 import { Validator } from "shacl-engine"
 import { EyelingReasoner } from 'n3-utility'
-import { Atomizer, RDF } from "odrl-atomization";
+import { RDF } from "odrl-atomization";
 import { RULES } from "./rules/Rules";
 import { SHAPES } from "./shapes/Shapes";
 import { DETECTION } from "./util/Vocabulary";
+import { Normalizer } from "./Normalisation";
+
+const POLICY_TYPES = [
+    "http://www.w3.org/ns/odrl/2/Policy",
+    "http://www.w3.org/ns/odrl/2/Set",
+    "http://www.w3.org/ns/odrl/2/Offer",
+    "http://www.w3.org/ns/odrl/2/Agreement",
+];
 
 export class ODRLValidator implements IODRLValidator {
-    private atomizer: Atomizer;
+    private normalizer: Normalizer;
 
     protected shaclStore: Store;
     private shaclValidator: Validator;
@@ -21,11 +29,11 @@ export class ODRLValidator implements IODRLValidator {
         let shape: Quad[] = new Parser().parse(SHAPES);
         let n3Rules: string = RULES;
 
-        if (config){
+        if (config) {
             shape = config.shape ?? shape;
             n3Rules = config.n3Rules ?? n3Rules;
         }
-        this.atomizer = new Atomizer();
+        this.normalizer = new Normalizer();
         this.shaclStore = new Store(shape);
 
         this.shaclValidator = new Validator(this.shaclStore, { factory: new DataFactory() });
@@ -39,77 +47,81 @@ export class ODRLValidator implements IODRLValidator {
             conflicts: []
         }
 
-        // No valid RDF 
-        if (!policies || policies.length === 0) {
+        // No valid RDF or No ODRL policies provided
+        if (!policies || policies.length === 0 ||
+            !policies.some(q => q.predicate.value === RDF.type && POLICY_TYPES.includes(q.object.value))) {
             output.valid = false;
             output.validationResults.push({
                 message: "No valid policy provided"
-            })
+            });
             return output;
         }
 
         // Normalization of the policies
-        let atomizedPolicies: Quad[];
+        let normalizedPolicies: Quad[];
         try {
-            atomizedPolicies = await this.atomizer.atomize(policies);
+            normalizedPolicies = await this.normalizer.normalise(policies);
         } catch (error) {
-            console.error("Error atomizing policies:", error);
-            atomizedPolicies = policies;
+            output.valid = false;
+            output.validationResults.push({
+                message: "Normalization step failed. " + error
+            });
+            return output;
         }
 
         // SHACL Validation
-        const report = await this.shaclValidator.validate({ dataset: new Store(atomizedPolicies) })
+        const report = await this.shaclValidator.validate({ dataset: new Store(normalizedPolicies) });
         if (report.conforms === false) {
 
             const getResults = (result: any): any[] => {
                 if (result.results && result.results.length > 0) {
-                    return result.results.flatMap((r: any) => getResults(r))
-                }
+                    return result.results.flatMap((r: any) => getResults(r));
+                };
 
                 const messages =
                     result.message?.map((m: any) => m.value)
                     ?? result._message?.()?.map((m: any) => m.value)
-                    ?? []
+                    ?? [];
 
                 return messages.map((message: string) => ({
                     message,
                     focusNode: result.focusNode?.value,
                     valueNode: result.value?.value,
                     severity: result.severity?.value
-                }))
-            }
+                }));
+            };
 
             output.validationResults = report.results.flatMap((result: any) =>
                 getResults(result)
-            )
-            
-            const duplicatedErrorResults = new Set<string>()
+            );
+
+            const duplicatedErrorResults = new Set<string>();
 
             output.validationResults = output.validationResults.filter((result: any) => {
-                const key = JSON.stringify(result)
-                return duplicatedErrorResults.has(key) ? false : duplicatedErrorResults.add(key)
-            })
+                const key = JSON.stringify(result);
+                return duplicatedErrorResults.has(key) ? false : duplicatedErrorResults.add(key);
+            });
 
             const hasViolation = output.validationResults.some((result: any) =>
                 result.severity === "http://www.w3.org/ns/shacl#Violation"
-            )
+            );
 
-            output.valid = !hasViolation
+            output.valid = !hasViolation;
 
             // If there are any violations, conflict detection does not make sense
             if (hasViolation) {
-                return output
+                return output;
             }
         } else {
             output.valid = true;
         }
 
         // Notation3 Conflict Detection
-        const conflictReasoningResult = await new EyelingReasoner().reason(new Store(atomizedPolicies), this.n3Rules);
+        const conflictReasoningResult = await new EyelingReasoner().reason(new Store(normalizedPolicies), this.n3Rules);
 
         const conflicts = conflictReasoningResult.getQuads(null, RDF.type, DETECTION.Conflict, null);
         for (const conflict of conflicts) {
-            
+
             // NOTE: we expect that the inconsistency detection rules are well formed. 
             // That is they produce an output with two rules and a reason.
             const reason = conflictReasoningResult.getObjects(conflict.subject, DETECTION.reason, null)[0].value;
@@ -120,8 +132,8 @@ export class ODRLValidator implements IODRLValidator {
                 severity: "error",
                 ruleA: rules[0],
                 ruleB: rules[1]
-        })
+            });
         }
-        return output
+        return output;
     }
 }

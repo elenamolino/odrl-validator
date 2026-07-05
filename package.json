@@ -1,6 +1,6 @@
 {
   "name": "odrl-validator",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Validating ODRL policies regarding syntax, semantics and consistency",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -41,6 +41,7 @@
     "@types/jest": "^30.0.0",
     "jest": "^30.3.0",
     "jest-rdf": "^2.0.0",
+    "ts-jest": "^29.4.9",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   }

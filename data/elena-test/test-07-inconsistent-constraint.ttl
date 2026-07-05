@@ -1,0 +1,24 @@
+@prefix ex: <http://example.com/> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix dpv-odrl: <https://w3id.org/dpv/mappings/odrl#> .
+@prefix dpv: <http://www.w3.org/ns/dpv#> .
+
+ex:policy1 a odrl:Policy ;
+    odrl:profile <https://w3id.org/dpv/mappings/odrl#> ;
+    odrl:permission ex:permission1 .
+
+ex:permission1 a odrl:Permission ;
+    odrl:assignee ex:alice ;
+    odrl:target ex:resourceX ;
+    odrl:action odrl:read ;
+    odrl:constraint ex:constraint1, ex:constraint2 .
+
+ex:constraint1 a odrl:Constraint ;
+    odrl:leftOperand dpv-odrl:Purpose ;
+    odrl:operator odrl:eq ;
+    odrl:rightOperand dpv:Advertising .
+
+ex:constraint2 a odrl:Constraint ;
+    odrl:leftOperand dpv-odrl:Purpose ;
+    odrl:operator odrl:eq ;
+    odrl:rightOperand dpv:NonCommercialResearch .
