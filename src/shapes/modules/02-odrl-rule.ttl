@@ -22,7 +22,6 @@
     sh:property [
         sh:path odrl:action ;
         sh:or (
-            [ sh:nodeKind sh:IRI ]
             [ sh:node :ActionShape ]
             [ sh:node :ActionWithRefinementShape ]
         );
@@ -49,7 +48,6 @@
     sh:property [
         sh:path odrl:target ;
         sh:or (
-            [ sh:nodeKind sh:IRI ]
             [ sh:node :AssetShape ]
             [ sh:node :AssetCollectionShape ]
         );
