@@ -5,7 +5,7 @@ The ODRL Validator is a Typescript tool to aid development of consistent [ODRL](
 This means the tool can validate whether the policies are syntactically (the correct syntax using the ODRL Vocabulary) and semantically (the terms are used in the correct place according to the model) correct.
 Furthermore, the tool can detect whether the policies do not contain inconsistencies, that is do they contain two or more rules that contradict each other.
 
-An online version of the ODRL Validator can be found [here](https://woutslabbinck.github.io/ODRL-Validator-Demo/).
+An online version of the ODRL Validator can be found [here](https://odrl-force.github.io/ODRL-Validator-Demo/).
 
 ## Architecture
 
